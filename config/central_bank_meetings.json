@@ -1,0 +1,43 @@
+{
+  "_comment": "Policy decision dates, maintained by hand from the official schedules. Update once a year when the next year's dates are published. FOMC: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm  MPC: https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates  SEP = Summary of Economic Projections; MPR = Monetary Policy Report.",
+  "US": {
+    "label": "FOMC rate decision",
+    "time": "14:00",
+    "tz": "America/New_York",
+    "indicators": ["us_policy_rate"],
+    "dates": [
+      { "date": "2026-01-28" },
+      { "date": "2026-03-18", "note": "with SEP" },
+      { "date": "2026-04-29" },
+      { "date": "2026-06-17", "note": "with SEP" },
+      { "date": "2026-07-29" },
+      { "date": "2026-09-16", "note": "with SEP" },
+      { "date": "2026-10-28" },
+      { "date": "2026-12-09", "note": "with SEP" }
+    ]
+  },
+  "UK": {
+    "label": "BoE MPC rate decision",
+    "time": "12:00",
+    "tz": "Europe/London",
+    "indicators": ["uk_bank_rate"],
+    "dates": [
+      { "date": "2026-02-05", "note": "with MPR" },
+      { "date": "2026-03-19" },
+      { "date": "2026-04-30", "note": "with MPR" },
+      { "date": "2026-06-18" },
+      { "date": "2026-07-30", "note": "with MPR" },
+      { "date": "2026-09-17" },
+      { "date": "2026-11-05", "note": "with MPR" },
+      { "date": "2026-12-17" },
+      { "date": "2027-02-04" },
+      { "date": "2027-03-18" },
+      { "date": "2027-04-29" },
+      { "date": "2027-06-17" },
+      { "date": "2027-07-29" },
+      { "date": "2027-09-16" },
+      { "date": "2027-11-04" },
+      { "date": "2027-12-16" }
+    ]
+  }
+}
