@@ -4,6 +4,7 @@ JSON files the static site reads (site/data/).
     python -m pipeline.build              # everything
     python -m pipeline.build --only uk_cpi_yoy us_cpi_yoy
     python -m pipeline.build --skip-calendar
+    python -m pipeline.build --only-elections
 """
 from __future__ import annotations
 
@@ -31,7 +32,7 @@ def _load_dotenv(path: Path = ROOT / ".env") -> None:
 
 _load_dotenv()
 
-from . import calendar, transforms  # noqa: E402
+from . import calendar, elections, transforms  # noqa: E402
 from .sources import FETCHERS  # noqa: E402
 
 CONFIG = ROOT / "config"
@@ -89,11 +90,34 @@ def build_indicator(ind: dict) -> dict:
     return meta
 
 
+def build_elections() -> None:
+    try:
+        items, sources, warnings = elections.build()
+    except Exception as exc:  # keep the previous file if Wikipedia is unreachable
+        print(f"  elections: FAILED ({exc}); keeping previous data")
+        return
+    if not items:
+        print("  elections: no entries parsed; keeping previous data")
+        return
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    _write(OUT / "elections.json", {"generated_at": now, "sources": sources, "warnings": warnings, "elections": items})
+    print(f"  elections: {len(items)} entries")
+    for w in warnings:
+        print(f"  elections warning: {w}")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", nargs="*", help="indicator ids to refresh")
     ap.add_argument("--skip-calendar", action="store_true")
+    ap.add_argument("--skip-elections", action="store_true")
+    ap.add_argument("--only-elections", action="store_true", help="just refresh the election calendar")
     args = ap.parse_args(argv)
+
+    if not args.skip_elections:
+        build_elections()
+    if args.only_elections:
+        return 0
 
     cfg = _load("series.json")
     indicators = cfg["indicators"]

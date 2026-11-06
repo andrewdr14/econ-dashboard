@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Macro Monitor</title>
-  <meta name="description" content="US, UK and euro area economic indicators and upcoming data releases.">
+  <meta name="description" content="US, UK and euro area economic indicators, upcoming data releases and a worldwide election calendar.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,6 +24,7 @@
         <button role="tab" data-view="dashboard" aria-selected="true">Dashboard</button>
         <button role="tab" data-view="compare" aria-selected="false">Compare</button>
         <button role="tab" data-view="calendar" aria-selected="false">Calendar</button>
+        <button role="tab" data-view="elections" aria-selected="false">Elections</button>
       </nav>
       <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1Z"/></svg>
@@ -70,6 +71,28 @@
       <div id="calendar"></div>
       <p class="note" id="cal-warnings"></p>
     </section>
+
+    <section id="view-elections" class="view" hidden aria-labelledby="el-title">
+      <div class="view-head">
+        <div>
+          <h1 id="el-title">Election calendar</h1>
+          <p class="sub" id="el-sub">National elections and referendums worldwide.</p>
+        </div>
+        <div class="filters">
+          <div class="seg" id="el-scope" role="radiogroup" aria-label="Countries"></div>
+          <div class="seg" id="el-type" role="radiogroup" aria-label="Election type"></div>
+          <button class="btn" id="el-ics" title="Download the filtered elections with a fixed date as an .ics file">Add to calendar</button>
+        </div>
+      </div>
+      <div class="seg seg-scroll" id="el-region" role="radiogroup" aria-label="Region"></div>
+      <div id="el-next" class="next-up"></div>
+      <div id="elections"></div>
+      <details class="el-recent" id="el-recent-wrap">
+        <summary>Recent elections <span class="note" id="el-recent-count"></span></summary>
+        <div id="el-recent"></div>
+      </details>
+      <p class="note" id="el-note"></p>
+    </section>
   </main>
 
   <footer class="wrap footer">
@@ -80,7 +103,8 @@
       <a href="https://ec.europa.eu/eurostat" rel="noopener">Eurostat</a> ·
       <a href="https://data.ecb.europa.eu/" rel="noopener">ECB</a> ·
       <a href="https://www.gov.uk/government/organisations/home-office/about/research#statistics" rel="noopener">Home Office</a> ·
-      <a href="https://www.cbp.gov/newsroom/stats/nationwide-encounters" rel="noopener">US CBP</a>. Refreshed automatically each day; figures may lag official releases by a few hours.</p>
+      <a href="https://www.cbp.gov/newsroom/stats/nationwide-encounters" rel="noopener">US CBP</a> ·
+      elections from <a href="https://en.wikipedia.org/wiki/List_of_elections_in_2026" rel="noopener">Wikipedia</a> (CC BY-SA) and <a href="https://www.wikidata.org/" rel="noopener">Wikidata</a>. Refreshed automatically each day; figures may lag official releases by a few hours.</p>
   </footer>
 
   <dialog id="detail" aria-labelledby="detail-title">

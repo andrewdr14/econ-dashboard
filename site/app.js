@@ -17,6 +17,10 @@ const state = {
   calCountry: store.get("calCountry", "ALL"),
   calImportance: store.get("calImportance", "high+"),
   detail: null,
+  elections: null,
+  elRegion: store.get("elRegion", "ALL"),
+  elScope: store.get("elScope", "all"),
+  elType: store.get("elType", "all"),
 };
 
 const SOURCE_NAMES = {
@@ -263,10 +267,138 @@ function exportIcs() {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+// ---------------------------------------------------------------- elections
+const EL_REGIONS = ["Europe", "Americas", "Asia", "Africa", "Oceania"];
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[m]);
+const isoDate = (s) => new Date(`${s}T12:00:00Z`);
+const localDay = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const todayIso = () => new Date().toLocaleDateString("en-CA");
+
+function elTag(e) {
+  const code = e.iso === "GB" ? "UK" : e.iso;
+  const c = state.summary?.countries?.[code] ? countryColor(code) : "var(--axis)";
+  return `<span class="cc" style="--c:${c}">${esc(e.iso || "··")}</span>`;
+}
+function elFiltered() {
+  const els = state.elections?.elections || [];
+  return els.filter((e) =>
+    (state.elRegion === "ALL" || e.region === state.elRegion) &&
+    (state.elScope === "all" || e.g20 || e.eu) &&
+    (state.elType === "all" || e.kinds.includes(state.elType)));
+}
+const elIsPast = (e, today) => e.date && e.precision !== "by" && (e.end || e.date) < today;
+function elGroupKey(e) {
+  if (e.precision === "day" || e.precision === "by") return e.date.slice(0, 7);
+  if (e.precision === "month") return `${e.year}-${String(e.month).padStart(2, "0")}`;
+  return `${e.year}-99`;
+}
+function elGroupLabel(k) {
+  const [y, m] = k.split("-");
+  return m === "99" ? `${y} · date not yet set` : `${MONTH_NAMES[+m - 1]} ${y}`;
+}
+function elWhen(e) {
+  if (e.precision === "day") {
+    const d = localDay(e.date);
+    const day = e.end ? `${d.getDate()}–${localDay(e.end).getDate()}` : d.getDate();
+    return `<span class="el-day">${day}</span><span class="el-wd">${d.toLocaleDateString(undefined, { weekday: "short" })}</span>`;
+  }
+  if (e.precision === "by") return `<span class="el-day">${localDay(e.date).getDate()}</span><span class="el-wd">latest</span>`;
+  return `<span class="el-day tbc">TBC</span>`;
+}
+function elRow(e) {
+  const offices = e.offices.map((o) => `<a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.label)}</a>`).join(", ");
+  const badges = [
+    e.round && `<span class="badge">${e.round} round</span>`,
+    e.indirect && `<span class="badge" title="Chosen by a legislature or electoral college, not a popular vote">Indirect</span>`,
+    e.territory && `<span class="badge" title="Dependent territory or partially recognised state">Territory</span>`,
+    e.g20 && `<span class="badge strong">G20</span>`, e.eu && `<span class="badge strong">EU</span>`,
+    e.precision === "month" && `<span class="badge" title="Only the month is known">Day TBC</span>`,
+    e.precision === "by" && `<span class="badge" title="Latest date allowed by law; it can be called earlier">Must be held by</span>`,
+  ].filter(Boolean).join("");
+  const rel = e.date && e.precision !== "month" ? relDays(localDay(e.date)) : "";
+  return `<div class="el-row">
+    <div class="el-when">${elWhen(e)}</div>
+    <div class="el-flag">${elTag(e)}</div>
+    <div class="el-main"><div class="el-title">${esc(e.country)}<span class="el-badges">${badges}</span></div>
+      <div class="el-offices">${offices}</div></div>
+    <div class="el-rel">${rel}</div>
+  </div>`;
+}
+function renderElections() {
+  const box = $("#elections");
+  if (!state.elections) { box.innerHTML = `<div class="empty">Election data not available yet. Run <code>python -m pipeline.build --only-elections</code>.</div>`; return; }
+  const today = todayIso();
+  const items = elFiltered();
+  const upcoming = items.filter((e) => !elIsPast(e, today));
+  const recent = items.filter((e) => elIsPast(e, today)).reverse();
+
+  const groups = new Map();
+  for (const e of upcoming) {
+    const k = elGroupKey(e);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(e);
+  }
+  const order = (a, b) => (a.precision === "month") - (b.precision === "month")
+    || (a.date || "").localeCompare(b.date || "") || a.country.localeCompare(b.country);
+  box.innerHTML = [...groups.keys()].sort().map((k) => {
+    const g = groups.get(k).sort(order);
+    return `<div class="cal-day"><div class="cal-day-head"><span class="d">${elGroupLabel(k)}</span>
+      <span class="rel">${g.length} ${g.length === 1 ? "election" : "elections"}</span></div>${g.map(elRow).join("")}</div>`;
+  }).join("") || `<div class="empty">No upcoming elections match these filters.</div>`;
+
+  $("#el-recent").innerHTML = recent.map(elRow).join("") || `<p class="note">None in the last 60 days.</p>`;
+  $("#el-recent-count").textContent = `${recent.length} in the last 60 days · results are on each linked article`;
+
+  const next = (state.elections.elections || []).filter((e) => (e.g20 || e.eu) && !e.indirect && e.precision === "day" && !elIsPast(e, today)).slice(0, 6);
+  $("#el-next").innerHTML = next.length ? `<span class="next-label">Next G20 / EU</span>` + next.map((e) =>
+    `<a class="next-item" href="${esc(e.offices[0].url)}" target="_blank" rel="noopener">
+      <div class="when">${localDay(e.date).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })} · ${relDays(localDay(e.date))}</div>
+      <div class="what">${elTag(e)} ${esc(e.country)}</div>
+      <div class="when">${esc(e.offices.map((o) => o.label).join(", "))}</div></a>`).join("") : "";
+
+  const dated = upcoming.filter((e) => e.precision === "day").length;
+  $("#el-sub").textContent = `${upcoming.length} upcoming national elections and referendums, ${dated} with a confirmed date.`;
+  const gen = new Date(state.elections.generated_at);
+  const srcLinks = state.elections.sources.map((u) =>
+    `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(decodeURIComponent(u.split("/wiki/")[1]).replace(/_/g, " "))}</a>`).join(" and ");
+  $("#el-note").innerHTML = `Source: Wikipedia's ${srcLinks} (CC BY-SA), with exact dates from Wikidata where the calendar only gives a month. `
+    + `A few major elections in later years are listed by hand in <code>config/elections_extra.json</code>. `
+    + `Fetched ${gen.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}. Snap elections appear once editors add them.`
+    + (state.elections.warnings?.length ? `<br>Note: ${esc(state.elections.warnings.join(" · "))}` : "");
+}
+function exportElectionsIcs() {
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+  const icsEsc = (s) => String(s).replace(/[\\,;]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
+  const ymd = (s) => s.replace(/-/g, "");
+  const plusDay = (s) => { const d = isoDate(s); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); };
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Macro Monitor//Elections//EN", "CALSCALE:GREGORIAN"];
+  const today = todayIso();
+  for (const e of elFiltered().filter((x) => x.precision === "day" && !elIsPast(x, today))) {
+    lines.push("BEGIN:VEVENT", `UID:${e.id}@macro-monitor-elections`, `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${ymd(e.date)}`, `DTEND;VALUE=DATE:${ymd(plusDay(e.end || e.date))}`,
+      `SUMMARY:${icsEsc(`${e.country} election: ${e.offices.map((o) => o.label).join(", ")}`)}`,
+      `DESCRIPTION:${icsEsc(e.offices.map((o) => o.url).join("\n"))}`, "TRANSP:TRANSPARENT", "END:VEVENT");
+  }
+  lines.push("END:VCALENDAR");
+  const blob = new Blob([lines.join("\r\n")], { type: "text/calendar" });
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "elections.ics" });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function initElectionFilters() {
+  segmented($("#el-region"), [["ALL", "All regions"], ...EL_REGIONS.map((r) => [r, r])], state.elRegion,
+    (v) => { state.elRegion = v; store.set("elRegion", v); renderElections(); });
+  segmented($("#el-scope"), [["all", "All countries"], ["major", "G20 + EU"]], state.elScope,
+    (v) => { state.elScope = v; store.set("elScope", v); renderElections(); });
+  segmented($("#el-type"), [["all", "All types"], ["executive", "Executive"], ["legislative", "Legislative"], ["referendum", "Referendum"]], state.elType,
+    (v) => { state.elType = v; store.set("elType", v); renderElections(); });
+}
+
 // ---------------------------------------------------------------- views & wiring
 let compareDrawn = false;
 function showView(view) {
-  if (!["dashboard", "compare", "calendar"].includes(view)) view = "dashboard";
+  if (!["dashboard", "compare", "calendar", "elections"].includes(view)) view = "dashboard";
   document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.view === view));
   document.querySelectorAll(".view").forEach((v) => (v.hidden = v.id !== `view-${view}`));
   if (view === "compare" && !compareDrawn) { compareDrawn = true; renderCompare(); }
@@ -291,6 +423,7 @@ function wire() {
     $("#detail-table").hidden = !on;
   };
   $("#ics-export").onclick = exportIcs;
+  $("#el-ics").onclick = exportElectionsIcs;
   $("#theme-toggle").onclick = () => {
     const dark = document.documentElement.dataset.theme
       ? document.documentElement.dataset.theme === "dark"
@@ -312,12 +445,14 @@ function initCalendarFilters() {
 async function init() {
   wire();
   try {
-    const [summary, cal] = await Promise.all([
+    const [summary, cal, els] = await Promise.all([
       fetch("data/summary.json").then((r) => r.json()),
       fetch("data/calendar.json").then((r) => (r.ok ? r.json() : { events: [], warnings: ["calendar.json missing"] })),
+      fetch("data/elections.json").then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
     state.summary = summary;
     state.calendar = cal;
+    state.elections = els;
   } catch (err) {
     $("#dashboard").innerHTML = `<div class="empty">Couldn't load data. Run <code>python -m pipeline.build</code> first. (${err.message})</div>`;
     return;
@@ -334,8 +469,10 @@ async function init() {
     (v) => { state.compareRange = v; store.set("compareRange", v); renderCompare(); });
   initCalendarFilters();
 
+  initElectionFilters();
   renderDashboard();
   renderCalendar();
+  renderElections();
   showView(location.hash.slice(1) || "dashboard");
 }
 

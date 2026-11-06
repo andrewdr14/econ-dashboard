@@ -1,12 +1,14 @@
 # Macro Monitor
 
-A static economic data dashboard for the US, UK and euro area (inflation, growth, labour, rates, public finances and migration), with a calendar of upcoming data releases.
+A static economic data dashboard for the US, UK and euro area (inflation, growth, labour, rates, public finances and migration), with a calendar of upcoming data releases and a worldwide election calendar.
 Data is fetched by a small Python pipeline, saved as JSON, and served by a plain HTML/JS site.
 A scheduled GitHub Actions job refreshes the data and redeploys to GitHub Pages.
 
 - **Dashboard**: latest value, change on the previous period, sparkline and next release date for each indicator. Click a card for the full history (1Y / 5Y / 10Y / Max, hover tooltips, table view).
 - **Compare**: comparable indicators (CPI, core CPI, unemployment, wages, policy rates, yields, debt/GDP, irregular arrivals) for all countries on one chart.
 - **Calendar**: upcoming releases for the next 90 days in your local time, filterable by country and importance, with an **Add to calendar** (.ics) export.
+- **Elections**: national elections and referendums worldwide, grouped by month and filterable by region, G20/EU and type
+  (executive, legislative, referendum), with a "next G20 / EU" strip, recent elections (last 60 days, linked to results) and .ics export.
 
 ## Data sources
 
@@ -20,6 +22,7 @@ A scheduled GitHub Actions job refreshes the data and redeploys to GitHub Pages.
 | UK | [Home Office](https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables) via the GOV.UK Content API | Small boat arrivals, asylum claims, visas; release dates via GOV.UK search | No |
 | EA | [Eurostat](https://ec.europa.eu/eurostat/web/main/data/web-services) | HICP, GDP, unemployment, industry, retail, sentiment, debt/deficit; release calendar (iCal) | No |
 | EA | [ECB Data Portal](https://data.ecb.europa.eu/) | Deposit rate, AAA yield curve, EUR/USD | No |
+| World | [Wikipedia national electoral calendars](https://en.wikipedia.org/wiki/2027_national_electoral_calendar) via the MediaWiki API, plus [Wikidata](https://www.wikidata.org/) for exact dates | Election calendar (this year and the next two, where pages exist) | No |
 | All | `config/central_bank_meetings.json` | FOMC, MPC and ECB decision dates (update yearly by hand) | — |
 
 Notes:
@@ -27,6 +30,10 @@ Notes:
   and parses it with the standard library. Big files (the visas dataset is ~33 MB) are cached in
   `data_cache/sources.json` by file URL, so they're only re-downloaded when a new edition is published.
 - DBnomics was tested but its Eurostat mirror lagged by months, so Eurostat and the ECB are queried directly.
+- Elections: the Wikipedia calendars are edited by volunteers, so snap elections appear once someone adds them. When a page gives only
+  a month, the election's Wikidata item supplies the day if it has one. `config/countries.json` maps country names to ISO codes and
+  regions (generated from Wikidata); `config/elections_extra.json` lists a few major elections in years with no calendar page yet
+  (e.g. US 2028, UK by Aug 2029) and is ignored once Wikipedia covers that year.
 - Eurostat's euro area aggregate changed to EA21 in 2026 (Bulgaria joined); HICP moved to `prc_hicp_minr` (ECOICOP v2).
 
 ## Running locally
@@ -46,6 +53,7 @@ Useful options:
 ```bash
 python -m pipeline.build --only uk_cpi_yoy us_cpi_yoy   # refresh a subset
 python -m pipeline.build --skip-calendar
+python -m pipeline.build --only-elections               # just the election calendar
 ```
 
 ## Adding an indicator or a country
@@ -58,6 +66,7 @@ Everything is driven by `config/`:
   `concept` so they appear together on the Compare tab.
 - `calendar.json`: which releases appear on the calendar, their importance, and the dashboard indicators they update.
 - `central_bank_meetings.json`: policy decision dates.
+- `countries.json` / `elections_extra.json`: country lookup and hand-listed future elections for the Elections tab.
 
 To add a country, add it under `countries` in `series.json`, add its indicators, and if needed a new
 connector in `pipeline/sources.py` (a function returning `[(iso_date, value), ...]`). For other EU
@@ -73,12 +82,13 @@ countries, the Eurostat and ECB connectors already work: change `geo` / the seri
 ## Layout
 
 ```
-config/        indicator, calendar and meeting definitions
+config/        indicator, calendar, meeting and country definitions
 pipeline/      Python fetchers (standard library + tzdata)
   sources.py   FRED / ONS / BoE / Eurostat / ECB / CBP connectors
   migration_uk.py  Home Office and ONS migration spreadsheets
   spreadsheets.py  stdlib ODS/XLSX readers
   calendar.py  ONS, FRED, BEA and central bank release calendars
+  elections.py Wikipedia/Wikidata election calendar
   build.py     entry point; writes site/data/*.json
 site/          static frontend (no build step)
   data/        generated JSON (committed by the workflow)

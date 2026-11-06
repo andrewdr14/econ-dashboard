@@ -1,0 +1,9 @@
+{
+  "_note": "Major elections beyond the years Wikipedia's national electoral calendars cover yet. Dropped automatically once the calendar page lists them. 'by' = the latest legal date.",
+  "elections": [
+    {"country": "United States", "date": "2028-11-07", "precision": "day", "offices": [{"label": "President, Senate and House of Representatives", "url": "https://en.wikipedia.org/wiki/2028_United_States_elections"}]},
+    {"country": "United Kingdom", "date": "2029-08-15", "precision": "by", "offices": [{"label": "House of Commons", "url": "https://en.wikipedia.org/wiki/Next_United_Kingdom_general_election"}]},
+    {"country": "Germany", "date": "2029", "precision": "year", "offices": [{"label": "Bundestag", "url": "https://en.wikipedia.org/wiki/Next_German_federal_election"}]},
+    {"country": "Japan", "date": "2028", "precision": "year", "offices": [{"label": "House of Councillors", "url": "https://en.wikipedia.org/wiki/2028_Japanese_House_of_Councillors_election"}]}
+  ]
+}
