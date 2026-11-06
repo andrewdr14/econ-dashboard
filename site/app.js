@@ -1,4 +1,4 @@
-import { renderChart, sparkline, fmtNum, fmtDate, toDate } from "./charts.js";
+import { renderChart, sparkline, fmtNum, fmtDate, toDate } from "./charts.js?v=dev";
 
 const $ = (s, r = document) => r.querySelector(s);
 const tooltip = $("#tooltip");
@@ -66,7 +66,7 @@ function filterRange(points, years) {
 }
 async function loadSeries(id) {
   if (!state.seriesCache[id]) {
-    state.seriesCache[id] = fetch(`data/series/${id}.json`).then((r) => {
+    state.seriesCache[id] = fetch(`data/series/${id}.json`, { cache: "no-cache" }).then((r) => {
       if (!r.ok) throw new Error(`${id}: HTTP ${r.status}`);
       return r.json();
     });
@@ -446,9 +446,9 @@ async function init() {
   wire();
   try {
     const [summary, cal, els] = await Promise.all([
-      fetch("data/summary.json").then((r) => r.json()),
-      fetch("data/calendar.json").then((r) => (r.ok ? r.json() : { events: [], warnings: ["calendar.json missing"] })),
-      fetch("data/elections.json").then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      fetch("data/summary.json", { cache: "no-cache" }).then((r) => r.json()),
+      fetch("data/calendar.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : { events: [], warnings: ["calendar.json missing"] })),
+      fetch("data/elections.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
     state.summary = summary;
     state.calendar = cal;
