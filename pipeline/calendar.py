@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import time as time_mod
 import re
 import urllib.parse
 from datetime import date, datetime, time, timedelta, timezone
@@ -20,11 +21,15 @@ def _event(**kw) -> dict:
 
 
 def _match(title: str, rules: list[dict], prefix: bool = False) -> dict | None:
-    """Case-insensitive match; prefix=True requires the title to start with the rule."""
+    """Case-insensitive match; prefix=True requires the title to start with the rule,
+    a rule with "exact": true must equal the whole title."""
     t = title.lower().strip()
     for rule in rules:
         m = rule["match"].lower()
-        if (t.startswith(m) if prefix else m in t):
+        if rule.get("exact"):
+            if t == m:
+                return rule
+        elif (t.startswith(m) if prefix else m in t):
             return rule
     return None
 
@@ -132,6 +137,70 @@ def bea_events(rules: list[dict], start: date, end: date) -> list[dict]:
     return events
 
 
+# ---------------------------------------------------------------- Euro area: Eurostat iCal feeds (date only)
+def _ics_vevents(text: str) -> list[dict]:
+    out, cur = [], None
+    for line in _ics_unfold(text):
+        if line == "BEGIN:VEVENT":
+            cur = {}
+        elif line == "END:VEVENT" and cur is not None:
+            out.append(cur)
+            cur = None
+        elif cur is not None and ":" in line:
+            k, v = line.split(":", 1)
+            cur[k.split(";")[0]] = v.replace("\\,", ",").replace("\\;", ";")
+    return out
+
+
+def eurostat_events(cfg: dict, start: date, end: date) -> list[dict]:
+    """Eurostat publishes one release calendar per theme; euro indicators come
+    out at 11:00 Luxembourg time but the feed only carries the date."""
+    events = []
+    for i, (theme, rules) in enumerate(cfg["themes"].items()):
+        if i:
+            time_mod.sleep(1)  # Eurostat rate-limits bursts
+        text = get_text(f"https://ec.europa.eu/eurostat/o/calendars/eventsIcal?theme={theme}&category=1", browser=True)
+        for ev in _ics_vevents(text):
+            rule = _match(ev.get("SUMMARY", ""), rules)
+            dt = ev.get("DTSTART", "")
+            if not rule or len(dt) < 8:
+                continue
+            d = datetime.strptime(dt[:8], "%Y%m%d").date()
+            if start <= d <= end:
+                events.append(_event(
+                    country="EA", title=rule["label"], detail=ev["SUMMARY"],
+                    importance=rule["importance"], indicators=rule.get("indicators", []),
+                    datetime_utc=_local_to_utc(d, cfg["time"], cfg["tz"]),
+                    source="Eurostat", url="https://ec.europa.eu/eurostat/web/main/news/release-calendar",
+                ))
+    return events
+
+
+# ---------------------------------------------------------------- UK Home Office: GOV.UK statistics announcements
+def govuk_events(cfg: dict, start: date, end: date) -> list[dict]:
+    events = []
+    for org in cfg["organisations"]:
+        q = urllib.parse.urlencode({
+            "filter_format": "statistics_announcement", "filter_organisations": org, "count": 500,
+            "fields": "title,release_timestamp,link,statistics_announcement_state",
+        })
+        for r in get_json(f"https://www.gov.uk/api/search.json?{q}").get("results", []):
+            rule = _match(r.get("title", ""), cfg["releases"], prefix=True)
+            ts = r.get("release_timestamp")
+            if not rule or not ts:
+                continue
+            when = datetime.fromisoformat(ts).astimezone(timezone.utc)
+            if start <= when.date() <= end and r.get("statistics_announcement_state") != "cancelled":
+                events.append(_event(
+                    country="UK", title=rule["label"], detail=r["title"],
+                    importance=rule["importance"], indicators=rule.get("indicators", []),
+                    datetime_utc=when.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    provisional=r.get("statistics_announcement_state") == "provisional",
+                    source="Home Office", url="https://www.gov.uk" + r.get("link", ""),
+                ))
+    return events
+
+
 # ---------------------------------------------------------------- Central bank meetings (config)
 def meeting_events(meetings: dict, start: date, end: date) -> list[dict]:
     events = []
@@ -169,6 +238,10 @@ def build(cal_cfg: dict, meetings: dict, today: date | None = None) -> tuple[lis
     else:
         warnings.append("FRED_API_KEY not set: US calendar limited to BEA releases and FOMC meetings")
         run("BEA calendar", bea_events, cal_cfg["US"]["bea_fallback"], start, end)
+    if "govuk" in cal_cfg["UK"]:
+        run("Home Office calendar", govuk_events, cal_cfg["UK"]["govuk"], start, end)
+    if "EA" in cal_cfg:
+        run("Eurostat calendar", eurostat_events, cal_cfg["EA"]["eurostat"], start, end)
     run("Central bank meetings", meeting_events, meetings, start, end)
 
     # De-duplicate (same country, title, day) and sort.

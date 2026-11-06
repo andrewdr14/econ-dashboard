@@ -19,6 +19,10 @@ const state = {
   detail: null,
 };
 
+const SOURCE_NAMES = {
+  fred: "FRED", ons: "ONS", boe: "Bank of England", eurostat: "Eurostat", ecb: "ECB", cbp: "US CBP",
+  small_boats: "Home Office", uk_asylum: "Home Office", uk_visas: "Home Office", ons_ltim: "ONS",
+};
 const RANGES = { "1Y": 1, "5Y": 5, "10Y": 10, "Max": null };
 
 // ---------------------------------------------------------------- helpers
@@ -30,6 +34,7 @@ function countryColor(code) {
 const flag = (c) => `<span class="cc" style="--c:${countryColor(c)}">${c}</span>`;
 const isPct = (unit) => unit && unit.includes("%");
 function chartKind(ind) {
+  if (ind.chart) return ind.chart;
   if (ind.concept === "policy_rate") return "step";
   if (/m\/m|q\/q/.test(ind.unit)) return "bar";
   return "line";
@@ -125,7 +130,7 @@ function cardHtml(ind) {
     <div class="card-value">${valueHtml(ind, ind.latest.value)}</div>
     <div class="card-meta"><span>${ind.latest.period}</span>${deltaText(ind)}</div>
     ${sparkline(ind.spark)}
-    <div class="card-foot"><span>${{ fred: "FRED", ons: "ONS", boe: "Bank of England" }[ind.source] || ind.source}</span><span>${nextTxt}</span></div>
+    <div class="card-foot"><span>${SOURCE_NAMES[ind.source] || ind.source}</span><span>${nextTxt}</span></div>
   </button>`;
 }
 
@@ -141,7 +146,7 @@ async function openDetail(id) {
     ? `<strong>${fmtNum(ind.latest.value, ind.decimals)}</strong> ${ind.unit} · ${ind.latest.period} · ${deltaText(ind)}`
     : "No data";
   const next = nextReleaseFor(id);
-  $("#detail-source").innerHTML = `Source: <a href="${ind.url}" target="_blank" rel="noopener">${{ fred: "FRED", ons: "ONS", boe: "Bank of England" }[ind.source]} · ${ind.series}</a>` +
+  $("#detail-source").innerHTML = (ind.note ? `${ind.note}<br>` : "") + `Source: <a href="${ind.url}" target="_blank" rel="noopener">${SOURCE_NAMES[ind.source] || ind.source}${ind.series ? " · " + ind.series : ""}</a>` +
     (next ? ` · Next release ${fmtDay(new Date(next.datetime_utc))}, ${fmtTime(new Date(next.datetime_utc))}` : "");
   segmented($("#detail-range"), Object.keys(RANGES).map((k) => [k, k]), state.detail.range, (v) => { state.detail.range = v; drawDetail(); });
   const tbtn = $("#detail-table-toggle");

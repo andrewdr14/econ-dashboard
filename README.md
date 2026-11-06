@@ -1,22 +1,33 @@
 # Macro Monitor
 
-A static economic data dashboard for the US and UK, with a calendar of upcoming data releases.
+A static economic data dashboard for the US, UK and euro area (inflation, growth, labour, rates, public finances and migration), with a calendar of upcoming data releases.
 Data is fetched by a small Python pipeline, saved as JSON, and served by a plain HTML/JS site.
 A scheduled GitHub Actions job refreshes the data and redeploys to GitHub Pages.
 
 - **Dashboard**: latest value, change on the previous period, sparkline and next release date for each indicator. Click a card for the full history (1Y / 5Y / 10Y / Max, hover tooltips, table view).
-- **Compare**: comparable indicators (CPI, core CPI, unemployment, wages, policy rate, yields) for both countries on one chart.
+- **Compare**: comparable indicators (CPI, core CPI, unemployment, wages, policy rates, yields, debt/GDP, irregular arrivals) for all countries on one chart.
 - **Calendar**: upcoming releases for the next 90 days in your local time, filterable by country and importance, with an **Add to calendar** (.ics) export.
 
 ## Data sources
 
 | Country | Source | Used for | Key needed |
 |---|---|---|---|
-| US | [FRED](https://fred.stlouisfed.org/) | All US indicators; release calendar | Optional for data, **required for the full US calendar** |
-| US | [BEA](https://www.bea.gov/news/schedule) iCal | Fallback calendar (GDP, PCE, trade) when there's no FRED key | No |
-| UK | [ONS](https://www.ons.gov.uk/) | CPI, GDP, labour market, retail sales; release calendar | No |
-| UK | [Bank of England database](https://www.bankofengland.co.uk/boeapps/database/) | Bank Rate, gilt yields, GBP/USD | No |
-| Both | `config/central_bank_meetings.json` | FOMC and MPC decision dates (update yearly by hand) | — |
+| US | [FRED](https://fred.stlouisfed.org/) | Macro, rates, deficit/debt, foreign-born labour force; release calendar | Optional for data, **required for the full US calendar** |
+| US | [CBP](https://www.cbp.gov/newsroom/stats/nationwide-encounters) | Border encounters (newest CSV discovered on the stats page each run) | No |
+| US | [BEA](https://www.bea.gov/news/schedule) iCal | Fallback calendar when there's no FRED key | No |
+| UK | [ONS](https://www.ons.gov.uk/) | CPI, GDP, labour market, retail, public finances, net migration; release calendar | No |
+| UK | [Bank of England](https://www.bankofengland.co.uk/boeapps/database/) | Bank Rate, gilt yields, GBP/USD | No |
+| UK | [Home Office](https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables) via the GOV.UK Content API | Small boat arrivals, asylum claims, visas; release dates via GOV.UK search | No |
+| EA | [Eurostat](https://ec.europa.eu/eurostat/web/main/data/web-services) | HICP, GDP, unemployment, industry, retail, sentiment, debt/deficit; release calendar (iCal) | No |
+| EA | [ECB Data Portal](https://data.ecb.europa.eu/) | Deposit rate, AAA yield curve, EUR/USD | No |
+| All | `config/central_bank_meetings.json` | FOMC, MPC and ECB decision dates (update yearly by hand) | — |
+
+Notes:
+- There's no Home Office API: the pipeline finds the latest ODS/XLSX attachment through the GOV.UK Content API
+  and parses it with the standard library. Big files (the visas dataset is ~33 MB) are cached in
+  `data_cache/sources.json` by file URL, so they're only re-downloaded when a new edition is published.
+- DBnomics was tested but its Eurostat mirror lagged by months, so Eurostat and the ECB are queried directly.
+- Eurostat's euro area aggregate changed to EA21 in 2026 (Bulgaria joined); HICP moved to `prc_hicp_minr` (ECOICOP v2).
 
 ## Running locally
 
@@ -26,7 +37,7 @@ python -m pipeline.build            # fetch everything -> site/data/
 python -m http.server 8765 -d site  # open http://localhost:8765
 ```
 
-Set `FRED_API_KEY` (free from <https://fred.stlouisfed.org/docs/api/api_key.html>) to use the official
+Put `FRED_API_KEY=...` in a local `.env` file (gitignored) or the environment (free from <https://fred.stlouisfed.org/docs/api/api_key.html>) to use the official
 FRED API and get the full US release calendar (CPI, payrolls, retail sales, etc.). Without it, US data comes
 from FRED's CSV download and the US calendar only has BEA releases and FOMC meetings.
 
@@ -41,16 +52,16 @@ python -m pipeline.build --skip-calendar
 
 Everything is driven by `config/`:
 
-- `series.json`: one entry per indicator: `source` (`fred` | `ons` | `boe`), the series code, a
-  `transform` (`level`, `yoy`, `mom`, `diff`), unit and decimals. Give comparable indicators the same
+- `series.json`: one entry per indicator: `source` (`fred`, `ons`, `boe`, `eurostat`, `ecb`, `cbp`, `small_boats`,
+  `uk_asylum`, `uk_visas`, `ons_ltim`), the series code or filters, a `transform` (`level`, `yoy`, `mom`, `diff`,
+  `yoy_diff`, `rolling_sum`, `rolling_mean`), unit and decimals. Give comparable indicators the same
   `concept` so they appear together on the Compare tab.
 - `calendar.json`: which releases appear on the calendar, their importance, and the dashboard indicators they update.
 - `central_bank_meetings.json`: policy decision dates.
 
 To add a country, add it under `countries` in `series.json`, add its indicators, and if needed a new
-connector in `pipeline/sources.py` (a function returning `[(iso_date, value), ...]`). For multi-country
-coverage, [DBnomics](https://db.nomics.world/) (one API over Eurostat, ECB, IMF, OECD and many national
-statistics offices) is the planned next connector.
+connector in `pipeline/sources.py` (a function returning `[(iso_date, value), ...]`). For other EU
+countries, the Eurostat and ECB connectors already work: change `geo` / the series key.
 
 ## Deployment (GitHub Pages)
 
@@ -64,9 +75,12 @@ statistics offices) is the planned next connector.
 ```
 config/        indicator, calendar and meeting definitions
 pipeline/      Python fetchers (standard library + tzdata)
-  sources.py   FRED / ONS / BoE connectors
+  sources.py   FRED / ONS / BoE / Eurostat / ECB / CBP connectors
+  migration_uk.py  Home Office and ONS migration spreadsheets
+  spreadsheets.py  stdlib ODS/XLSX readers
   calendar.py  ONS, FRED, BEA and central bank release calendars
   build.py     entry point; writes site/data/*.json
 site/          static frontend (no build step)
   data/        generated JSON (committed by the workflow)
+data_cache/    parsed copies of large source files, keyed by URL
 ```

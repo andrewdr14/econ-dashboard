@@ -31,9 +31,28 @@ def _year_earlier(d: str) -> str:
         return x.replace(year=x.year - 1, day=28).isoformat()
 
 
-def apply(obs: Obs, transform: str, scale: float = 1.0) -> Obs:
+def _rolling(obs: Obs, window: int, mean: bool) -> Obs:
+    """Rolling sum/mean over `window` consecutive periods; skips windows with gaps."""
+    out = []
+    freq = frequency(obs)
+    max_gap = {"monthly": 35, "quarterly": 100, "weekly": 8, "daily": 5}.get(freq, 400)
+    for i in range(window - 1, len(obs)):
+        win = obs[i - window + 1: i + 1]
+        ds = [date.fromisoformat(d) for d, _ in win]
+        if any((b - a).days > max_gap for a, b in zip(ds, ds[1:])):
+            continue
+        s = sum(v for _, v in win)
+        out.append((obs[i][0], s / window if mean else s))
+    return out
+
+
+def apply(obs: Obs, transform: str, scale: float = 1.0, window: int = 12) -> Obs:
     if transform == "level":
         out = obs
+    elif transform == "rolling_sum":
+        out = _rolling(obs, window, mean=False)
+    elif transform == "rolling_mean":
+        out = _rolling(obs, window, mean=True)
     elif transform == "yoy":
         lookup = dict(obs)
         out = []
@@ -41,6 +60,9 @@ def apply(obs: Obs, transform: str, scale: float = 1.0) -> Obs:
             prev = lookup.get(_year_earlier(d))
             if prev:
                 out.append((d, (v / prev - 1) * 100))
+    elif transform == "yoy_diff":
+        lookup = dict(obs)
+        out = [(d, v - lookup[_year_earlier(d)]) for d, v in obs if _year_earlier(d) in lookup]
     elif transform == "mom":
         out = [(d, (v / pv - 1) * 100) for (_, pv), (d, v) in zip(obs, obs[1:]) if pv]
     elif transform == "diff":

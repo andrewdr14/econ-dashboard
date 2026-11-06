@@ -1,39 +1,348 @@
 {
-  "_comment": "Rules that decide which releases appear on the calendar and how important they are. 'match' is case-insensitive: a prefix of the release title for ONS and BEA, a substring for FRED. 'indicators' links an event to dashboard indicators so the calendar can show the latest value. 'time'/'tz' supply a release time where the source only gives a date (FRED).",
+  "_comment": "Rules that decide which releases appear on the calendar and how important they are. 'match' is case-insensitive: a prefix of the release title for ONS, BEA and GOV.UK, a substring for FRED and Eurostat; \"exact\": true requires the whole title. 'indicators' links an event to dashboard indicators so the calendar can show the latest value. 'time'/'tz' supply a release time where the source only gives a date (FRED).",
   "horizon_days": 90,
   "US": {
     "fred_releases": [
-      { "match": "Consumer Price Index", "label": "CPI", "importance": "high", "time": "08:30", "tz": "America/New_York", "indicators": ["us_cpi_yoy", "us_core_cpi_yoy"] },
-      { "match": "Employment Situation", "label": "Employment report (payrolls)", "importance": "high", "time": "08:30", "tz": "America/New_York", "indicators": ["us_payrolls_change", "us_unemployment", "us_ahe_yoy"] },
-      { "match": "Gross Domestic Product", "label": "GDP", "importance": "high", "time": "08:30", "tz": "America/New_York", "indicators": ["us_gdp_qoq_saar"] },
-      { "match": "Personal Income and Outlays", "label": "Personal income & outlays (PCE)", "importance": "high", "time": "08:30", "tz": "America/New_York", "indicators": ["us_core_pce_yoy"] },
-      { "match": "Advance Monthly Sales for Retail", "label": "Retail sales", "importance": "high", "time": "08:30", "tz": "America/New_York", "indicators": ["us_retail_sales_mom"] },
-      { "match": "Producer Price Index", "label": "PPI", "importance": "medium", "time": "08:30", "tz": "America/New_York" },
-      { "match": "Job Openings and Labor Turnover", "label": "JOLTS job openings", "importance": "medium", "time": "10:00", "tz": "America/New_York" },
-      { "match": "Industrial Production and Capacity Utilization", "label": "Industrial production", "importance": "medium", "time": "09:15", "tz": "America/New_York", "indicators": ["us_indpro_yoy"] },
-      { "match": "Unemployment Insurance Weekly Claims", "label": "Initial jobless claims", "importance": "medium", "time": "08:30", "tz": "America/New_York", "indicators": ["us_claims"] },
-      { "match": "Surveys of Consumers", "label": "UMich consumer sentiment", "importance": "medium", "time": "10:00", "tz": "America/New_York", "indicators": ["us_umich"] },
-      { "match": "New Residential Construction", "label": "Housing starts", "importance": "low", "time": "08:30", "tz": "America/New_York" },
-      { "match": "Manufacturers' Shipments, Inventories, and Orders", "label": "Factory orders / durable goods", "importance": "low", "time": "10:00", "tz": "America/New_York" },
-      { "match": "International Trade in Goods and Services", "label": "Trade balance", "importance": "low", "time": "08:30", "tz": "America/New_York" }
+      {
+        "match": "Consumer Price Index",
+        "label": "CPI",
+        "importance": "high",
+        "time": "08:30",
+        "tz": "America/New_York",
+        "indicators": [
+          "us_cpi_yoy",
+          "us_core_cpi_yoy"
+        ]
+      },
+      {
+        "match": "Employment Situation",
+        "label": "Employment report (payrolls)",
+        "importance": "high",
+        "time": "08:30",
+        "tz": "America/New_York",
+        "indicators": [
+          "us_payrolls_change",
+          "us_unemployment",
+          "us_ahe_yoy"
+        ]
+      },
+      {
+        "match": "Gross Domestic Product",
+        "exact": true,
+        "label": "GDP",
+        "importance": "high",
+        "time": "08:30",
+        "tz": "America/New_York",
+        "indicators": [
+          "us_gdp_qoq_saar"
+        ]
+      },
+      {
+        "match": "Personal Income and Outlays",
+        "label": "Personal income & outlays (PCE)",
+        "importance": "high",
+        "time": "08:30",
+        "tz": "America/New_York",
+        "indicators": [
+          "us_core_pce_yoy"
+        ]
+      },
+      {
+        "match": "Advance Monthly Sales for Retail",
+        "label": "Retail sales",
+        "importance": "high",
+        "time": "08:30",
+        "tz": "America/New_York",
+        "indicators": [
+          "us_retail_sales_mom"
+        ]
+      },
+      {
+        "match": "Producer Price Index",
+        "label": "PPI",
+        "importance": "medium",
+        "time": "08:30",
+        "tz": "America/New_York"
+      },
+      {
+        "match": "Job Openings and Labor Turnover",
+        "label": "JOLTS job openings",
+        "importance": "medium",
+        "time": "10:00",
+        "tz": "America/New_York"
+      },
+      {
+        "match": "Industrial Production and Capacity Utilization",
+        "label": "Industrial production",
+        "importance": "medium",
+        "time": "09:15",
+        "tz": "America/New_York",
+        "indicators": [
+          "us_indpro_yoy"
+        ]
+      },
+      {
+        "match": "Unemployment Insurance Weekly Claims Report",
+        "exact": true,
+        "label": "Initial jobless claims",
+        "importance": "medium",
+        "time": "08:30",
+        "tz": "America/New_York",
+        "indicators": [
+          "us_claims"
+        ]
+      },
+      {
+        "match": "Surveys of Consumers",
+        "label": "UMich consumer sentiment",
+        "importance": "medium",
+        "time": "10:00",
+        "tz": "America/New_York",
+        "indicators": [
+          "us_umich"
+        ]
+      },
+      {
+        "match": "New Residential Construction",
+        "label": "Housing starts",
+        "importance": "low",
+        "time": "08:30",
+        "tz": "America/New_York"
+      },
+      {
+        "match": "Manufacturers' Shipments, Inventories, and Orders",
+        "label": "Factory orders / durable goods",
+        "importance": "low",
+        "time": "10:00",
+        "tz": "America/New_York"
+      },
+      {
+        "match": "International Trade in Goods and Services",
+        "label": "Trade balance",
+        "importance": "low",
+        "time": "08:30",
+        "tz": "America/New_York"
+      }
     ],
     "bea_fallback": [
-      { "match": "GDP (", "label": "GDP", "importance": "high", "indicators": ["us_gdp_qoq_saar"] },
-      { "match": "Personal Income and Outlays", "label": "Personal income & outlays (PCE)", "importance": "high", "indicators": ["us_core_pce_yoy"] },
-      { "match": "International Trade in Goods and Services", "label": "Trade balance", "importance": "low" }
+      {
+        "match": "GDP (",
+        "label": "GDP",
+        "importance": "high",
+        "indicators": [
+          "us_gdp_qoq_saar"
+        ]
+      },
+      {
+        "match": "Personal Income and Outlays",
+        "label": "Personal income & outlays (PCE)",
+        "importance": "high",
+        "indicators": [
+          "us_core_pce_yoy"
+        ]
+      },
+      {
+        "match": "International Trade in Goods and Services",
+        "label": "Trade balance",
+        "importance": "low"
+      }
     ]
   },
   "UK": {
     "ons_releases": [
-      { "match": "Consumer price inflation, UK", "label": "CPI inflation", "importance": "high", "indicators": ["uk_cpi_yoy", "uk_core_cpi_yoy", "uk_cpih_yoy"] },
-      { "match": "GDP monthly estimate, UK", "label": "Monthly GDP", "importance": "high", "indicators": ["uk_monthly_gdp_mom"] },
-      { "match": "GDP first quarterly estimate", "label": "GDP first quarterly estimate", "importance": "high", "indicators": ["uk_gdp_qoq"] },
-      { "match": "GDP quarterly national accounts", "label": "GDP quarterly national accounts", "importance": "medium", "indicators": ["uk_gdp_qoq"] },
-      { "match": "UK Labour Market", "label": "Labour market", "importance": "high", "indicators": ["uk_unemployment", "uk_regular_pay_yoy", "uk_employment_rate"] },
-      { "match": "Retail sales, Great Britain", "label": "Retail sales", "importance": "high", "indicators": ["uk_retail_sales_yoy"] },
-      { "match": "Public sector finances, UK", "label": "Public sector finances", "importance": "medium" },
-      { "match": "Producer price inflation, UK", "label": "PPI", "importance": "medium" },
-      { "match": "UK Trade:", "label": "Trade", "importance": "low" }
-    ]
+      {
+        "match": "Consumer price inflation, UK",
+        "label": "CPI inflation",
+        "importance": "high",
+        "indicators": [
+          "uk_cpi_yoy",
+          "uk_core_cpi_yoy",
+          "uk_cpih_yoy"
+        ]
+      },
+      {
+        "match": "GDP monthly estimate, UK",
+        "label": "Monthly GDP",
+        "importance": "high",
+        "indicators": [
+          "uk_monthly_gdp_mom"
+        ]
+      },
+      {
+        "match": "GDP first quarterly estimate",
+        "label": "GDP first quarterly estimate",
+        "importance": "high",
+        "indicators": [
+          "uk_gdp_qoq"
+        ]
+      },
+      {
+        "match": "GDP quarterly national accounts",
+        "label": "GDP quarterly national accounts",
+        "importance": "medium",
+        "indicators": [
+          "uk_gdp_qoq"
+        ]
+      },
+      {
+        "match": "UK Labour Market",
+        "label": "Labour market",
+        "importance": "high",
+        "indicators": [
+          "uk_unemployment",
+          "uk_regular_pay_yoy",
+          "uk_employment_rate"
+        ]
+      },
+      {
+        "match": "Retail sales, Great Britain",
+        "label": "Retail sales",
+        "importance": "high",
+        "indicators": [
+          "uk_retail_sales_yoy"
+        ]
+      },
+      {
+        "match": "Public sector finances, UK",
+        "label": "Public sector finances",
+        "importance": "medium"
+      },
+      {
+        "match": "Producer price inflation, UK",
+        "label": "PPI",
+        "importance": "medium"
+      },
+      {
+        "match": "UK Trade:",
+        "label": "Trade",
+        "importance": "low"
+      },
+      {
+        "match": "Long-term international migration",
+        "label": "Net migration (ONS)",
+        "importance": "medium",
+        "indicators": [
+          "uk_net_migration"
+        ]
+      }
+    ],
+    "govuk": {
+      "organisations": [
+        "home-office"
+      ],
+      "releases": [
+        {
+          "match": "Immigration system statistics, year ending",
+          "label": "Immigration statistics (quarterly)",
+          "importance": "medium",
+          "indicators": [
+            "uk_asylum_claims",
+            "uk_visas_wsf"
+          ]
+        },
+        {
+          "match": "Monthly entry clearance visa applications",
+          "label": "Visa applications (monthly)",
+          "importance": "low"
+        }
+      ]
+    }
+  },
+  "EA": {
+    "eurostat": {
+      "time": "11:00",
+      "tz": "Europe/Luxembourg",
+      "themes": {
+        "2": [
+          {
+            "match": "Flash estimate inflation euro area",
+            "label": "Flash HICP inflation",
+            "importance": "high",
+            "exact": true,
+            "indicators": [
+              "ea_hicp_yoy",
+              "ea_core_hicp_yoy",
+              "ea_services_hicp_yoy"
+            ]
+          },
+          {
+            "match": "Inflation (HICP)",
+            "label": "HICP inflation (final)",
+            "importance": "medium",
+            "exact": true,
+            "indicators": [
+              "ea_hicp_yoy"
+            ]
+          },
+          {
+            "match": "Preliminary flash estimate GDP - EU and euro area",
+            "label": "GDP preliminary flash",
+            "importance": "high",
+            "exact": true,
+            "indicators": [
+              "ea_gdp_qoq"
+            ]
+          },
+          {
+            "match": "Flash estimate GDP and employment - EU and euro area",
+            "label": "GDP & employment flash",
+            "importance": "medium",
+            "exact": true,
+            "indicators": [
+              "ea_gdp_qoq"
+            ]
+          },
+          {
+            "match": "Quarterly government debt",
+            "label": "Government debt (quarterly)",
+            "importance": "low",
+            "exact": true,
+            "indicators": [
+              "ea_debt_gdp"
+            ]
+          },
+          {
+            "match": "Quarterly government deficit",
+            "label": "Government deficit (quarterly)",
+            "importance": "low",
+            "exact": true,
+            "indicators": [
+              "ea_deficit_gdp"
+            ]
+          }
+        ],
+        "3": [
+          {
+            "match": "Unemployment",
+            "label": "Unemployment",
+            "importance": "medium",
+            "exact": true,
+            "indicators": [
+              "ea_unemployment"
+            ]
+          }
+        ],
+        "4": [
+          {
+            "match": "Industrial production",
+            "label": "Industrial production",
+            "importance": "medium",
+            "exact": true,
+            "indicators": [
+              "ea_indpro_yoy"
+            ]
+          },
+          {
+            "match": "Retail trade",
+            "label": "Retail trade",
+            "importance": "medium",
+            "exact": true,
+            "indicators": [
+              "ea_retail_yoy"
+            ]
+          }
+        ]
+      }
+    }
   }
 }

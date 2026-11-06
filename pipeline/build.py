@@ -9,15 +9,31 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import calendar, transforms
-from .sources import FETCHERS
-
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def _load_dotenv(path: Path = ROOT / ".env") -> None:
+    """Load KEY=VALUE lines from a local, gitignored .env (CI uses repo secrets instead)."""
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            k, v = line.split("=", 1)
+            os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+
+
+_load_dotenv()
+
+from . import calendar, transforms  # noqa: E402
+from .sources import FETCHERS  # noqa: E402
+
 CONFIG = ROOT / "config"
 OUT = ROOT / "site" / "data"
 SPARK_POINTS = {"daily": 260, "weekly": 104, "monthly": 36, "quarterly": 20, "annual": 15}
@@ -40,17 +56,20 @@ def _spark(obs, freq):
 
 
 def build_indicator(ind: dict) -> dict:
-    meta = {k: ind.get(k) for k in ("id", "country", "category", "concept", "name", "unit", "decimals", "source", "series")}
+    meta = {k: ind.get(k) for k in ("id", "country", "category", "concept", "name", "unit", "decimals", "source", "series", "chart", "note")}
     try:
         raw, url = FETCHERS[ind["source"]](ind)
-        obs = transforms.apply(raw, ind.get("transform", "level"), ind.get("scale", 1.0))
+        obs = transforms.apply(raw, ind.get("transform", "level"), ind.get("scale", 1.0), ind.get("window", 12))
         if not obs:
             raise RuntimeError("no observations")
-        freq = transforms.frequency(obs)
+        freq = ind.get("freq") or transforms.frequency(obs)
         _write(OUT / "series" / f"{ind['id']}.json",
                {"id": ind["id"], "frequency": freq, "observations": [[d, round(v, 4)] for d, v in obs]})
         last_d, last_v = obs[-1]
         prev = obs[-2] if len(obs) > 1 else None
+        if ind.get("compare") == "yoy":  # seasonal, non-adjusted series: compare with a year earlier
+            year_ago = transforms._year_earlier(last_d)
+            prev = next(((d, v) for d, v in obs if d == year_ago), None)
         meta.update({
             "status": "ok", "url": url, "frequency": freq,
             "latest": {"date": last_d, "value": round(last_v, 4), "period": transforms.period_label(last_d, freq)},

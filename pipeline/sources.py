@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import io
 import os
+import re
 import urllib.parse
 from datetime import datetime
 
@@ -102,4 +103,103 @@ def boe(ind: dict) -> tuple[Obs, str]:
     return obs, page
 
 
-FETCHERS = {"fred": fred, "ons": ons, "boe": boe}
+def _period_to_date(p: str) -> str:
+    """SDMX-style periods: 2026-09-14, 2026-09, 2026-Q3, 2026-S1, 2026."""
+    p = p.strip()
+    if len(p) == 10:
+        return p
+    if "-Q" in p:
+        y, q = p.split("-Q")
+        return f"{y}-{(int(q) - 1) * 3 + 1:02d}-01"
+    if "-S" in p:
+        y, s = p.split("-S")
+        return f"{y}-{(int(s) - 1) * 6 + 1:02d}-01"
+    if len(p) == 7:
+        return f"{p}-01"
+    if len(p) == 4:
+        return f"{p}-01-01"
+    raise ValueError(f"Unrecognised period {p!r}")
+
+
+# ---------------------------------------------------------------- Eurostat (EU)
+def eurostat(ind: dict) -> tuple[Obs, str]:
+    """Eurostat dissemination API (JSON-stat 2.0). `filters` must pin every
+    dimension except time to a single value."""
+    ds = ind["dataset"]
+    q = urllib.parse.urlencode({"format": "JSON", "lang": "EN", **ind["filters"]})
+    data = get_json(f"https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/{ds}?{q}")
+    sizes = dict(zip(data["id"], data["size"]))
+    extra = {k: v for k, v in sizes.items() if k != "time" and v != 1}
+    if extra:
+        raise RuntimeError(f"Eurostat {ds}: filters leave multiple values for {extra}")
+    tindex = data["dimension"]["time"]["category"]["index"]
+    periods = {v: k for k, v in tindex.items()}
+    obs = sorted((_period_to_date(periods[int(i)]), float(v)) for i, v in data["value"].items() if v is not None)
+    start = ind.get("start", "1990-01-01")
+    return [o for o in obs if o[0] >= start], f"https://ec.europa.eu/eurostat/databrowser/view/{ds}/default/table"
+
+
+# ---------------------------------------------------------------- ECB Data Portal (euro area)
+def ecb(ind: dict) -> tuple[Obs, str]:
+    key = ind["series"]  # e.g. FM/D.U2.EUR.4F.KR.DFR.LEV
+    start = ind.get("start", "1999-01-01")
+    text = get_text(f"https://data-api.ecb.europa.eu/service/data/{key}?format=csvdata&startPeriod={start[:7]}")
+    obs = []
+    for r in csv.DictReader(io.StringIO(text)):
+        v = (r.get("OBS_VALUE") or "").strip()
+        if v and v.upper() != "NAN":
+            obs.append((_period_to_date(r["TIME_PERIOD"]), float(v)))
+    flow, rest = key.split("/", 1)
+    return sorted(obs), f"https://data.ecb.europa.eu/data/datasets/{flow}/{flow}.{rest}"
+
+
+# ---------------------------------------------------------------- US CBP border encounters
+_CBP_PAGE = "https://www.cbp.gov/document/stats/nationwide-encounters"
+_FY_MONTH = {m: i for i, m in enumerate(
+    ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"], 1)}
+_cbp_cache: dict[str, list[dict]] = {}
+
+
+def _cbp_rows() -> list[dict]:
+    """CBP publishes rolling 4-fiscal-year CSVs whose names change monthly, so
+    find the newest one on the stats page, plus the oldest for extra history."""
+    if "rows" in _cbp_cache:
+        return _cbp_cache["rows"]
+    page = get_text(_CBP_PAGE, browser=True)
+    links = sorted(set(re.findall(r'/sites/default/files/(\d{4}-\d{2})/(nationwide-encounters-fy(\d{2})[^"]*?-aor\.csv)', page)))
+    if not links:
+        raise RuntimeError("No CBP encounter CSV links found on the stats page")
+    newest = max(links, key=lambda x: x[0])
+    oldest = min(links, key=lambda x: (x[2], x[0]))
+    files = [oldest, newest] if oldest != newest else [newest]
+    by_month: dict[tuple, list[dict]] = {}
+    for folder, name, _ in files:  # later file overwrites overlapping months
+        text = get_text(f"https://www.cbp.gov/sites/default/files/{folder}/{name}", browser=True)
+        fresh: dict[tuple, list[dict]] = {}
+        for r in csv.DictReader(io.StringIO(text.lstrip("﻿"))):
+            fy, mon = int(r["Fiscal Year"]), r["Month (abbv)"].strip().upper()[:3]
+            m = _FY_MONTH[mon]
+            year = fy - 1 if m >= 10 else fy
+            fresh.setdefault((year, m), []).append(r)
+        by_month.update(fresh)
+    rows = [dict(r, _date=f"{y}-{m:02d}-01") for (y, m), rs in by_month.items() for r in rs]
+    _cbp_cache["rows"] = rows
+    return rows
+
+
+def cbp(ind: dict) -> tuple[Obs, str]:
+    filt = ind.get("filters", {})
+    totals: dict[str, float] = {}
+    for r in _cbp_rows():
+        if all(r.get(k, "").strip() == v for k, v in filt.items()):
+            totals[r["_date"]] = totals.get(r["_date"], 0.0) + float(r["Encounter Count"] or 0)
+    return sorted(totals.items()), "https://www.cbp.gov/newsroom/stats/nationwide-encounters"
+
+
+from . import migration_uk  # noqa: E402
+
+FETCHERS = {
+    "fred": fred, "ons": ons, "boe": boe, "eurostat": eurostat, "ecb": ecb, "cbp": cbp,
+    "small_boats": migration_uk.small_boats, "uk_asylum": migration_uk.asylum_claims,
+    "uk_visas": migration_uk.visas_granted, "ons_ltim": migration_uk.net_migration,
+}
