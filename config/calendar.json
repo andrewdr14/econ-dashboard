@@ -205,7 +205,12 @@
       {
         "match": "Public sector finances, UK",
         "label": "Public sector finances",
-        "importance": "medium"
+        "importance": "medium",
+        "indicators": [
+          "uk_psnb_month",
+          "uk_psnb_12m",
+          "uk_net_debt_gdp"
+        ]
       },
       {
         "match": "Producer price inflation, UK",

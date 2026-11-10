@@ -4,8 +4,11 @@ A static economic data dashboard for the US, UK and euro area (inflation, growth
 Data is fetched by a small Python pipeline, saved as JSON, and served by a plain HTML/JS site.
 A scheduled GitHub Actions job refreshes the data and redeploys to GitHub Pages.
 
-- **Dashboard**: latest value, change on the previous period, sparkline and next release date for each indicator. Click a card for the full history (1Y / 5Y / 10Y / Max, hover tooltips, table view).
-- **Compare**: comparable indicators (CPI, core CPI, unemployment, wages, policy rates, yields, debt/GDP, irregular arrivals) for all countries on one chart.
+- **Dashboard**: latest value, change on the previous period, sparkline and next release date for each indicator. Click a card for the full history (1Y / 5Y / 10Y / Max, hover tooltips, table view) and a plain-English explainer.
+  A **Next up** sidebar lists the country's upcoming releases; click one for a pop-up with what the statistic measures, why it matters, the latest and previous values, and when it comes out.
+- **Compare**: a graph builder. Add a chart by picking a statistic (GDP growth, CPI, core CPI, unemployment, wages, policy rates, yields, FX,
+  industrial production, debt/GDP, irregular arrivals, any single indicator, or a custom mix measured in the same units), the areas to compare,
+  a frequency (as published, monthly, quarterly or annual averages / end-of-period / totals) and a time range. Charts are saved in your browser.
 - **Calendar**: upcoming releases for the next 90 days in your local time, filterable by country and importance, with an **Add to calendar** (.ics) export.
 - **Elections**: national elections and referendums worldwide, grouped by month and filterable by region, G20/EU and type
   (executive, legislative, referendum), with a "next G20 / EU" strip, recent elections (last 60 days, linked to results) and .ics export.
@@ -66,6 +69,8 @@ Everything is driven by `config/`:
   `concept` so they appear together on the Compare tab.
 - `calendar.json`: which releases appear on the calendar, their importance, and the dashboard indicators they update.
 - `central_bank_meetings.json`: policy decision dates.
+- `explainers.json`: the "what it measures / why it matters" text for each indicator and for releases with no dashboard indicator.
+  Indicators with `"hidden": true` (e.g. non-annualised US GDP) are used on the Compare page but not shown as dashboard cards.
 - `countries.json` / `elections_extra.json`: country lookup and hand-listed future elections for the Elections tab.
 
 To add a country, add it under `countries` in `series.json`, add its indicators, and if needed a new

@@ -13,7 +13,6 @@ const state = {
   byId: {},
   seriesCache: {},
   country: store.get("country", "US"),
-  compareRange: store.get("compareRange", "10Y"),
   calCountry: store.get("calCountry", "ALL"),
   calImportance: store.get("calImportance", "high+"),
   detail: null,
@@ -30,6 +29,7 @@ const SOURCE_NAMES = {
 const RANGES = { "1Y": 1, "5Y": 5, "10Y": 10, "Max": null };
 
 // ---------------------------------------------------------------- helpers
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[m]);
 function countryColor(code) {
   const idx = Object.keys(state.summary.countries).indexOf(code);
   return `var(--series-${(idx % 8) + 1})`;
@@ -104,7 +104,7 @@ function nextReleaseFor(id) {
 // ---------------------------------------------------------------- dashboard
 function renderDashboard() {
   const { summary } = state;
-  const inds = summary.indicators.filter((i) => i.country === state.country);
+  const inds = summary.indicators.filter((i) => i.country === state.country && !i.hidden);
   const html = summary.categories.map((cat) => {
     const cards = inds.filter((i) => i.category === cat);
     if (!cards.length) return "";
@@ -112,13 +112,67 @@ function renderDashboard() {
   }).join("");
   $("#dashboard").innerHTML = html || `<div class="empty">No indicators configured for this country yet.</div>`;
 
-  const next = upcoming().filter((e) => e.country === state.country && e.importance === "high").slice(0, 8);
-  $("#next-up").innerHTML = next.length ? `<span class="next-label">Next up</span>` + next.map((e) => {
+  renderSidebar();
+}
+
+function renderSidebar() {
+  const next = upcoming().filter((e) => e.country === state.country && e.importance !== "low").slice(0, 12);
+  $("#side-title").textContent = `Next up · ${state.country}`;
+  $("#next-up").innerHTML = next.map((e) => {
     const d = new Date(e.datetime_utc);
-    return `<button class="next-item" data-goto-cal>
-      <div class="when">${fmtShortDay(d)} · ${fmtTime(d)}</div>
-      <div class="what">${e.title}</div></button>`;
-  }).join("") : "";
+    const rel = relDays(d);
+    const soon = rel === "today" || rel === "tomorrow";
+    return `<button class="side-item${e.importance === "high" ? " high" : ""}" data-release="${e.id}" aria-label="${esc(e.title)}, ${fmtDay(d)}. Open details">
+      <span class="side-when"><span class="${soon ? "soon" : ""}">${soon ? rel[0].toUpperCase() + rel.slice(1) : fmtShortDay(d)}</span>${e.time_known ? ` · ${fmtTime(d)}` : ""}</span>
+      <span class="side-what">${esc(e.title)}</span>
+      ${e.importance === "high" ? `<span class="side-imp">High impact</span>` : ""}
+    </button>`;
+  }).join("") || `<p class="note">No releases scheduled in the next 90 days.</p>`;
+}
+
+// ---------------------------------------------------------------- release pop-up
+const eventById = (id) => state.calendar.events.find((e) => e.id === id);
+function aboutHtml(about) {
+  if (!about) return "";
+  return `<dl class="about-dl"><dt>What it measures</dt><dd>${esc(about.what)}</dd>${about.why ? `<dt>Why it matters</dt><dd>${esc(about.why)}</dd>` : ""}</dl>`;
+}
+function openRelease(id) {
+  const e = eventById(id);
+  if (!e) return;
+  const d = new Date(e.datetime_utc);
+  const country = state.summary.countries[e.country]?.name || e.country;
+  $("#rel-eyebrow").innerHTML = `${flag(e.country)} ${esc(country)} · ${e.importance} importance`;
+  $("#rel-title").textContent = e.title;
+  const when = `${fmtDay(d)}${e.time_known ? `, ${fmtTime(d)}` : ""} · ${relDays(d)}`;
+  $("#rel-when").innerHTML = `${when}${e.provisional ? " · provisional date" : ""}<br><span class="note">${esc(e.detail)} · ${esc(e.source)}</span>`;
+  const inds = e.indicators.map((x) => state.byId[x]).filter(Boolean);
+  const relAbout = state.summary.release_about?.[`${e.country}|${e.title}`];
+  const blocks = inds.map((ind) => {
+    const after = upcoming().filter((x) => x.indicators.includes(ind.id) && x.id !== e.id)[0];
+    const latest = ind.latest ? `
+      <div class="rel-stat">
+        <div><div class="rel-k">Latest · ${ind.latest.period}</div><div class="card-value">${valueHtml(ind, ind.latest.value)}</div><div class="card-unit">${esc(ind.unit)}</div></div>
+        <div class="rel-delta">${deltaText(ind)}${ind.previous ? `<div class="note">Previous: ${fmtNum(ind.previous.value, ind.decimals)} (${ind.previous.period})</div>` : ""}</div>
+      </div>
+      <div style="--series-c:${countryColor(ind.country)}">${sparkline(ind.spark)}</div>` : `<p class="note">No data yet.</p>`;
+    return `<section class="rel-ind">
+      <div class="rel-ind-head"><h3>${esc(ind.name)}</h3><button class="btn ghost" data-open-chart="${ind.id}">Open chart</button></div>
+      ${latest}
+      ${aboutHtml(ind.about)}
+      ${ind.note ? `<p class="note">${esc(ind.note)}</p>` : ""}
+      ${after ? `<p class="note">The release after this: ${fmtDay(new Date(after.datetime_utc))}.</p>` : ""}
+    </section>`;
+  }).join("");
+  const body = (relAbout ? `<section class="rel-ind">${aboutHtml(relAbout)}</section>` : "")
+    + (blocks || (relAbout ? "" : `<p class="note">This release isn't tracked on the dashboard yet.</p>`));
+  $("#rel-body").innerHTML = body + `<div class="rel-foot">
+      ${e.url ? `<a class="btn ghost" href="${esc(e.url)}" target="_blank" rel="noopener">Release page</a>` : ""}
+      <button class="btn ghost" data-ics-one="${e.id}">Add to calendar</button>
+      <a class="btn ghost" href="#calendar" data-close data-goto-cal>Full calendar</a>
+    </div>`;
+  const dlg = $("#release");
+  if (!dlg.open) dlg.showModal();
+  dlg.scrollTop = 0;
 }
 
 function cardHtml(ind) {
@@ -149,6 +203,7 @@ async function openDetail(id) {
   $("#detail-sub").innerHTML = ind.latest
     ? `<strong>${fmtNum(ind.latest.value, ind.decimals)}</strong> ${ind.unit} · ${ind.latest.period} · ${deltaText(ind)}`
     : "No data";
+  $("#detail-about").innerHTML = aboutHtml(ind.about);
   const next = nextReleaseFor(id);
   $("#detail-source").innerHTML = (ind.note ? `${ind.note}<br>` : "") + `Source: <a href="${ind.url}" target="_blank" rel="noopener">${SOURCE_NAMES[ind.source] || ind.source}${ind.series ? " · " + ind.series : ""}</a>` +
     (next ? ` · Next release ${fmtDay(new Date(next.datetime_utc))}, ${fmtTime(new Date(next.datetime_utc))}` : "");
@@ -180,35 +235,319 @@ async function drawDetail() {
 }
 
 // ---------------------------------------------------------------- compare
-async function renderCompare() {
-  const { summary } = state;
-  const box = $("#compare");
-  const concepts = Object.entries(summary.concepts);
-  box.innerHTML = concepts.map(([key, label]) => {
-    const inds = summary.indicators.filter((i) => i.concept === key && i.latest);
-    const legend = inds.map((i) => `<span><span class="swatch" style="background:${countryColor(i.country)}"></span>${flag(i.country)} ${i.name} <strong>${fmtNum(i.latest.value, i.decimals)}</strong></span>`).join("");
-    return `<div class="panel"><div class="panel-head"><div class="panel-title">${label}</div></div>
-      <div class="legend">${legend}</div><div class="chart" data-concept="${key}"></div></div>`;
-  }).join("");
-  const years = RANGES[state.compareRange];
-  await Promise.all(concepts.map(async ([key]) => {
-    const inds = summary.indicators.filter((i) => i.concept === key && i.latest);
-    const host = box.querySelector(`[data-concept="${key}"]`);
-    try {
-      const all = await Promise.all(inds.map((i) => loadSeries(i.id)));
-      // Align the window to the latest common date so ranges match.
-      const lastCommon = all.map((s) => s.observations.at(-1)[0]).sort().at(-1);
-      const cut = years ? `${+lastCommon.slice(0, 4) - years}${lastCommon.slice(4)}` : "0000";
-      const series = inds.map((ind, k) => ({
-        label: `${ind.country} ${ind.name}`, short: ind.country, color: countryColor(ind.country),
-        freq: all[k].frequency, points: all[k].observations.filter((p) => p[0] >= cut),
-      }));
-      const ind0 = inds[0];
-      renderChart(host, series, { kind: ind0.concept === "policy_rate" ? "step" : "line", decimals: Math.max(...inds.map((i) => i.decimals)), unit: isPct(ind0.unit) ? "%" : ind0.unit, tooltip });
-    } catch (err) {
-      host.innerHTML = `<div class="chart-empty">Couldn't load (${err.message})</div>`;
-    }
+// ---------------------------------------------------------------- compare: chart widgets
+// Each widget is { id, stat, areas, inds, freq, agg, range, name }, saved in localStorage.
+//   stat: "concept:<key>" (one statistic across areas) | "ind:<id>" (one indicator) | "custom" (any indicators)
+const WIDGETS_KEY = "compareWidgets.v1";
+const FREQ_RANK = { daily: 0, weekly: 1, monthly: 2, quarterly: 3, annual: 4 };
+const FREQ_OPTS = [["native", "As published"], ["monthly", "Monthly"], ["quarterly", "Quarterly"], ["annual", "Annual"]];
+const AGG_LABEL = { avg: "averages", last: "end-of-period values", sum: "totals" };
+const MAX_SERIES = 6;
+const uid = () => Math.random().toString(36).slice(2, 9);
+const countryOrder = () => Object.keys(state.summary.countries);
+const conceptName = (k) => state.summary.concepts[k].replace(/\s*\(.*$/, "").replace(/,.*$/, "");
+const unitFamily = (u) => (u || "").trim().split(/[\s,]/)[0];
+const isFlowUnit = (u) => /per (month|quarter)|^k m\/m|^£bn$/.test(u || "");
+
+function conceptAreas(k) {
+  const have = new Set(state.summary.indicators.filter((i) => i.concept === k && i.latest).map((i) => i.country));
+  return countryOrder().filter((c) => have.has(c));
+}
+function defaultWidgets() {
+  return Object.keys(state.summary.concepts).map((k) => ({
+    id: uid(), stat: `concept:${k}`, areas: conceptAreas(k), inds: [], freq: "native", agg: "avg", range: "10Y", name: "",
   }));
+}
+function loadWidgets() {
+  try {
+    const w = JSON.parse(store.get(WIDGETS_KEY, "null"));
+    if (Array.isArray(w)) return w.filter((x) => resolveWidget(x).length);
+  } catch {}
+  return defaultWidgets();
+}
+const saveWidgets = () => store.set(WIDGETS_KEY, JSON.stringify(state.widgets));
+
+function resolveWidget(w) {
+  const order = countryOrder();
+  let inds = [];
+  if (w.stat?.startsWith("concept:")) {
+    const k = w.stat.slice(8);
+    inds = state.summary.indicators.filter((i) => i.concept === k && (w.areas || []).includes(i.country));
+    inds.sort((a, b) => order.indexOf(a.country) - order.indexOf(b.country));
+  } else if (w.stat?.startsWith("ind:")) {
+    inds = [state.byId[w.stat.slice(4)]];
+  } else if (w.stat === "custom") {
+    inds = (w.inds || []).map((id) => state.byId[id]);
+  }
+  return inds.filter((i) => i && i.latest);
+}
+function widgetTitle(w, inds) {
+  if (w.name) return w.name;
+  if (w.stat.startsWith("concept:")) return state.summary.concepts[w.stat.slice(8)];
+  if (inds.length === 1) return `${inds[0].name} · ${state.summary.countries[inds[0].country]?.name || inds[0].country}`;
+  return inds.map((i) => `${i.country} ${i.name}`).join(" vs ");
+}
+
+// Calendar periods: monthly / quarterly / annual, dated at the period's start like the source data.
+function periodStart(iso, f) {
+  const y = iso.slice(0, 4), m = +iso.slice(5, 7);
+  if (f === "monthly") return `${y}-${iso.slice(5, 7)}-01`;
+  if (f === "quarterly") return `${y}-${String(Math.floor((m - 1) / 3) * 3 + 1).padStart(2, "0")}-01`;
+  return `${y}-01-01`;
+}
+function resample(points, target, agg) {
+  const groups = new Map();
+  for (const [d, v] of points) {
+    const k = periodStart(d, target);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(v);
+  }
+  const out = [...groups.entries()].map(([k, vs]) => ({
+    k, n: vs.length,
+    v: agg === "last" ? vs[vs.length - 1] : agg === "sum" ? vs.reduce((a, b) => a + b, 0) : vs.reduce((a, b) => a + b, 0) / vs.length,
+  }));
+  // Drop part-filled periods at either end (e.g. the current quarter), except for end-of-period values.
+  if (agg !== "last" && out.length > 3) {
+    const counts = out.slice(1, -1).map((o) => o.n).sort((a, b) => a - b);
+    const full = counts[counts.length >> 1];
+    if (out[out.length - 1].n < full * 0.8) out.pop();
+    if (out[0].n < full * 0.8) out.shift();
+  }
+  return out.map((o) => [o.k, o.v]);
+}
+
+async function widgetData(w) {
+  const inds = resolveWidget(w).slice(0, MAX_SERIES);
+  const raw = await Promise.all(inds.map((i) => loadSeries(i.id)));
+  const order = countryOrder();
+  const distinct = new Set(inds.map((i) => i.country)).size === inds.length;
+  const colorFor = (ind, k) => (distinct && order.includes(ind.country) ? countryColor(ind.country) : `var(--series-${(k % 8) + 1})`);
+  let resampled = false;
+  const series = inds.map((ind, k) => {
+    const s = raw[k];
+    let pts = s.observations, freq = s.frequency;
+    if (w.freq !== "native" && FREQ_RANK[w.freq] > FREQ_RANK[s.frequency]) {
+      pts = resample(pts, w.freq, w.agg);
+      freq = w.freq;
+      resampled = true;
+    }
+    return { ind, label: `${ind.country} ${ind.name}`, short: ind.country, color: colorFor(ind, k), freq, points: pts };
+  });
+  // Align the window to the latest date across series so ranges match.
+  const years = RANGES[w.range];
+  const last = series.map((s) => s.points.at(-1)?.[0] || "0000").sort().at(-1);
+  const cut = years ? `${+last.slice(0, 4) - years}${last.slice(4)}` : "0000";
+  for (const s of series) s.points = s.points.filter((p) => p[0] >= cut);
+
+  const units = [...new Set(inds.map((i) => i.unit))];
+  let unit = units.length === 1 ? units[0] : unitFamily(units[0]);
+  if (resampled && w.agg === "sum") unit = unit.replace(/per (month|quarter)/, `per ${w.freq === "annual" ? "year" : "quarter"}`).replace(/ m\/m$/, "");
+  const decimals = Math.max(...inds.map((i) => i.decimals));
+  const kind = inds.every((i) => i.concept === "policy_rate") && !resampled ? "step" : "line";
+  const note = resampled ? `${FREQ_OPTS.find((f) => f[0] === w.freq)[1]} ${AGG_LABEL[w.agg]}` : "";
+  // Country codes at the line ends work when each line is a different area; otherwise use the legend.
+  return { inds, series, unit, decimals, kind, note, endLabels: distinct && inds.length > 1 };
+}
+
+function legendHtml(series, decimals) {
+  return series.map((s) => {
+    const lastPt = s.points.at(-1);
+    return `<span><span class="swatch" style="background:${s.color}"></span>${flag(s.ind.country)} ${esc(s.ind.name)} <strong>${lastPt ? fmtNum(lastPt[1], decimals) : "–"}</strong></span>`;
+  }).join("");
+}
+
+async function drawWidget(w, panel) {
+  const host = panel.querySelector("[data-chart]");
+  segmented(panel.querySelector("[data-range]"), Object.keys(RANGES).map((k) => [k, k]), w.range,
+    (v) => { w.range = v; saveWidgets(); drawWidget(w, panel); });
+  try {
+    const d = await widgetData(w);
+    panel.querySelector("[data-legend]").innerHTML = legendHtml(d.series, d.decimals);
+    panel.querySelector("[data-note]").textContent = [d.unit, d.note].filter(Boolean).join(" · ");
+    renderChart(host, d.series, { kind: d.kind, decimals: d.decimals, unit: unitFamily(d.unit) === "%" ? "%" : "", tooltip, endLabels: d.endLabels });
+  } catch (err) {
+    host.innerHTML = `<div class="chart-empty">Couldn't load (${esc(err.message)})</div>`;
+  }
+}
+
+const ICON_EDIT = `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/></svg>`;
+const ICON_X = `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>`;
+
+function renderWidgets() {
+  state.widgets ??= loadWidgets();
+  const box = $("#compare");
+  if (!state.widgets.length) {
+    box.innerHTML = `<div class="empty">No charts yet. <button class="btn primary" data-add-chart>+ Add chart</button></div>`;
+    return;
+  }
+  box.innerHTML = state.widgets.map((w) => {
+    const title = widgetTitle(w, resolveWidget(w));
+    return `<div class="panel" data-w="${w.id}">
+      <div class="panel-head"><div class="panel-title">${esc(title)}</div>
+        <div class="panel-tools">
+          <div class="seg seg-sm" data-range role="radiogroup" aria-label="Time range"></div>
+          <button class="icon-btn sm" data-edit title="Edit chart" aria-label="Edit ${esc(title)}">${ICON_EDIT}</button>
+          <button class="icon-btn sm" data-remove title="Remove chart" aria-label="Remove ${esc(title)}">${ICON_X}</button>
+        </div></div>
+      <div class="legend" data-legend></div><div class="chart" data-chart></div><p class="note panel-note" data-note></p>
+    </div>`;
+  }).join("");
+  for (const w of state.widgets) drawWidget(w, box.querySelector(`[data-w="${w.id}"]`));
+}
+
+// ---------------------------------------------------------------- graph builder
+const builder = { draft: null, editing: null, timer: 0 };
+
+function statOptions() {
+  const { summary } = state;
+  const concepts = Object.keys(summary.concepts).map((k) =>
+    `<option value="concept:${k}">${esc(conceptName(k))} (${conceptAreas(k).join(", ")})</option>`).join("");
+  const byCat = summary.categories.map((cat) => {
+    const inds = summary.indicators.filter((i) => i.category === cat && i.latest && !i.hidden);
+    if (!inds.length) return "";
+    return `<optgroup label="${esc(cat)}: single indicators">${inds.map((i) =>
+      `<option value="ind:${i.id}">${esc(i.name)} · ${i.country}</option>`).join("")}</optgroup>`;
+  }).join("");
+  return `<optgroup label="Compare across areas">${concepts}</optgroup>${byCat}
+    <optgroup label="Mix and match"><option value="custom">Custom: pick any indicators…</option></optgroup>`;
+}
+
+function builderChecks() {
+  const w = builder.draft;
+  const areasWrap = $("#b-areas-wrap"), indsWrap = $("#b-inds-wrap");
+  if (w.stat === "custom") {
+    areasWrap.hidden = true; indsWrap.hidden = false;
+    const { summary } = state;
+    $("#b-inds").innerHTML = countryOrder().map((c) => {
+      const inds = summary.indicators.filter((i) => i.country === c && i.latest);
+      return `<div class="check-group"><div class="check-head">${flag(c)} ${esc(summary.countries[c].name)}</div>${inds.map((i) =>
+        `<label class="check"><input type="checkbox" name="ind" value="${i.id}" ${w.inds.includes(i.id) ? "checked" : ""}>
+          <span>${esc(i.name)} <span class="note">${esc(i.unit)}</span></span></label>`).join("")}</div>`;
+    }).join("");
+    return;
+  }
+  areasWrap.hidden = false; indsWrap.hidden = true;
+  if (w.stat.startsWith("concept:")) {
+    const avail = conceptAreas(w.stat.slice(8));
+    $("#b-areas").innerHTML = avail.map((c) => `<label class="check"><input type="checkbox" name="area" value="${c}" ${w.areas.includes(c) ? "checked" : ""}>
+      <span>${flag(c)} ${esc(state.summary.countries[c].name)}</span></label>`).join("");
+  } else {
+    const ind = state.byId[w.stat.slice(4)];
+    $("#b-areas").innerHTML = `<label class="check"><input type="checkbox" checked disabled><span>${flag(ind.country)} ${esc(state.summary.countries[ind.country].name)}</span></label>
+      <p class="note">Only published for this area. Use a "Compare across areas" statistic or Custom to add others.</p>`;
+  }
+}
+
+function builderOptions() {
+  const w = builder.draft;
+  const inds = resolveWidget(w);
+  const coarsest = Math.max(-1, ...inds.map((i) => FREQ_RANK[i.frequency] ?? 2));
+  const allowed = FREQ_OPTS.filter(([k]) => k === "native" || FREQ_RANK[k] > coarsest);
+  if (!allowed.some(([k]) => k === w.freq)) w.freq = "native";
+  $("#b-freq").innerHTML = allowed.map(([k, l]) => `<option value="${k}" ${k === w.freq ? "selected" : ""}>${l}</option>`).join("");
+  const agg = $("#b-agg");
+  const canSum = inds.length && inds.every((i) => isFlowUnit(i.unit));
+  agg.querySelector('[value="sum"]').disabled = !canSum;
+  if (!canSum && w.agg === "sum") w.agg = "avg";
+  agg.value = w.agg;
+  agg.disabled = w.freq === "native";
+  $("#b-range").value = w.range;
+}
+
+function builderProblem() {
+  const w = builder.draft;
+  const inds = resolveWidget(w);
+  if (!inds.length) return w.stat === "custom" ? "Pick at least one indicator." : "Pick at least one area.";
+  if (inds.length > MAX_SERIES) return `Pick up to ${MAX_SERIES} indicators so the chart stays readable.`;
+  const fams = [...new Set(inds.map((i) => unitFamily(i.unit)))];
+  if (fams.length > 1) return `These are measured in different units (${fams.join(", ")}). A chart has one axis, so pick indicators measured the same way, or put them on separate charts.`;
+  return "";
+}
+
+function builderRefresh(rebuildChecks = false) {
+  if (rebuildChecks) builderChecks();
+  builderOptions();
+  const problem = builderProblem();
+  $("#b-msg").textContent = problem;
+  $("#b-msg").classList.toggle("warn", !!problem);
+  $("#b-save").disabled = !!problem;
+  clearTimeout(builder.timer);
+  builder.timer = setTimeout(async () => {
+    if (problem) { $("#b-chart").innerHTML = `<div class="chart-empty">Nothing to show yet</div>`; $("#b-legend").innerHTML = ""; return; }
+    try {
+      const d = await widgetData(builder.draft);
+      $("#b-legend").innerHTML = legendHtml(d.series, d.decimals);
+      renderChart($("#b-chart"), d.series, { kind: d.kind, decimals: d.decimals, unit: unitFamily(d.unit) === "%" ? "%" : "", tooltip, endLabels: d.endLabels });
+    } catch (err) {
+      $("#b-chart").innerHTML = `<div class="chart-empty">Couldn't load (${esc(err.message)})</div>`;
+    }
+  }, 120);
+}
+
+function openBuilder(w) {
+  builder.editing = w ? w.id : null;
+  const firstConcept = Object.keys(state.summary.concepts)[0];
+  builder.draft = w ? JSON.parse(JSON.stringify(w))
+    : { id: uid(), stat: `concept:${firstConcept}`, areas: conceptAreas(firstConcept), inds: [], freq: "native", agg: "avg", range: "10Y", name: "" };
+  $("#b-title").textContent = w ? "Edit chart" : "Add a chart";
+  $("#b-save").textContent = w ? "Save chart" : "Add chart";
+  $("#b-stat").innerHTML = statOptions();
+  $("#b-stat").value = builder.draft.stat;
+  $("#b-range").innerHTML = Object.keys(RANGES).map((k) => `<option value="${k}">${k === "Max" ? "All" : k === "1Y" ? "1 year" : k.replace("Y", " years")}</option>`).join("");
+  $("#b-name").value = builder.draft.name || "";
+  const dlg = $("#builder");
+  dlg.append(tooltip);
+  if (!dlg.open) dlg.showModal();
+  builderRefresh(true);
+}
+
+function wireBuilder() {
+  $("#cmp-add").onclick = () => openBuilder();
+  $("#cmp-reset").onclick = () => {
+    if (!confirm("Replace your charts with the default set?")) return;
+    state.widgets = defaultWidgets(); saveWidgets(); renderWidgets();
+  };
+  $("#compare").addEventListener("click", (e) => {
+    if (e.target.closest("[data-add-chart]")) return openBuilder();
+    const panel = e.target.closest("[data-w]");
+    if (!panel) return;
+    const w = state.widgets.find((x) => x.id === panel.dataset.w);
+    if (e.target.closest("[data-edit]")) openBuilder(w);
+    if (e.target.closest("[data-remove]")) {
+      state.widgets = state.widgets.filter((x) => x !== w); saveWidgets(); renderWidgets();
+    }
+  });
+  const form = $("#builder-form");
+  form.addEventListener("change", (e) => {
+    const w = builder.draft;
+    const t = e.target;
+    if (t.id === "b-stat") {
+      const prev = { ...w };
+      w.stat = t.value;
+      if (w.stat.startsWith("concept:")) w.areas = conceptAreas(w.stat.slice(8));
+      // Switching to Custom starts from whatever the previous choice showed.
+      if (w.stat === "custom" && !w.inds.length) w.inds = resolveWidget(prev).map((i) => i.id);
+    }
+    if (t.name === "area") w.areas = [...form.querySelectorAll('input[name="area"]:checked')].map((x) => x.value);
+    if (t.name === "ind") w.inds = [...form.querySelectorAll('input[name="ind"]:checked')].map((x) => x.value);
+    if (t.id === "b-freq") w.freq = t.value;
+    if (t.id === "b-agg") w.agg = t.value;
+    if (t.id === "b-range") w.range = t.value;
+    if (t.id !== "b-name") builderRefresh(t.id === "b-stat");
+  });
+  $("#b-name").addEventListener("input", (e) => { builder.draft.name = e.target.value.trim(); });
+  form.addEventListener("submit", (e) => {
+    if (builderProblem()) { e.preventDefault(); return; }
+    state.widgets ??= loadWidgets();
+    const w = builder.draft;
+    const i = state.widgets.findIndex((x) => x.id === builder.editing);
+    if (i >= 0) state.widgets[i] = w; else state.widgets.unshift(w);
+    saveWidgets();
+    if (location.hash !== "#compare") showView("compare");
+    compareDrawn = true;
+    renderWidgets();
+    $("#compare").querySelector(`[data-w="${w.id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
 }
 
 // ---------------------------------------------------------------- calendar
@@ -242,7 +581,7 @@ function renderCalendar() {
         return `<div class="cal-row">
           <span class="cal-time">${e.time_known ? fmtTime(d) : "TBC"}</span>
           <span class="cal-flag" title="${state.summary.countries[e.country]?.name || e.country}">${flag(e.country)}</span>
-          <div><div class="cal-title">${e.title}${impDots(e.importance)}${e.note ? `<span class="note-inline">${e.note}</span>` : ""}${e.provisional ? `<span class="note-inline">provisional date</span>` : ""}</div>
+          <div><div class="cal-title"><button class="linkish" data-release="${e.id}">${e.title}</button>${impDots(e.importance)}${e.note ? `<span class="note-inline">${e.note}</span>` : ""}${e.provisional ? `<span class="note-inline">provisional date</span>` : ""}</div>
             <div class="cal-detail">${detail} · ${e.source}</div></div>
           <div class="cal-last">${last}</div>
         </div>`;
@@ -254,11 +593,11 @@ function renderCalendar() {
   $("#cal-sub").textContent = `Next ${events.length ? Math.max(1, Math.round((new Date(events.at(-1).datetime_utc) - Date.now()) / 864e5)) : 0} days · times in your time zone (${tz})`;
 }
 
-function exportIcs() {
+function exportIcs(events = filteredEvents()) {
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
   const esc = (s) => String(s).replace(/[\\,;]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
   const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Macro Monitor//EN", "CALSCALE:GREGORIAN"];
-  for (const e of filteredEvents()) {
+  for (const e of events) {
     const dt = e.datetime_utc.replace(/[-:]/g, "").slice(0, 15) + "Z";
     lines.push("BEGIN:VEVENT", `UID:${e.id}@macro-monitor`, `DTSTAMP:${stamp}`, `DTSTART:${dt}`, "DURATION:PT15M",
       `SUMMARY:${esc(`${e.country} ${e.title}`)}`, `DESCRIPTION:${esc(`${e.detail}${e.url ? "\n" + e.url : ""}`)}`, "END:VEVENT");
@@ -273,7 +612,6 @@ function exportIcs() {
 // ---------------------------------------------------------------- elections
 const EL_REGIONS = ["Europe", "Americas", "Asia", "Africa", "Oceania"];
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[m]);
 const isoDate = (s) => new Date(`${s}T12:00:00Z`);
 const localDay = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
 const todayIso = () => new Date().toLocaleDateString("en-CA");
@@ -404,7 +742,7 @@ function showView(view) {
   if (!["dashboard", "compare", "calendar", "elections"].includes(view)) view = "dashboard";
   document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.view === view));
   document.querySelectorAll(".view").forEach((v) => (v.hidden = v.id !== `view-${view}`));
-  if (view === "compare" && !compareDrawn) { compareDrawn = true; renderCompare(); }
+  if (view === "compare" && !compareDrawn) { compareDrawn = true; renderWidgets(); }
   if (location.hash.slice(1) !== view) history.replaceState(null, "", `#${view}`);
   tooltip.hidden = true;
 }
@@ -415,17 +753,28 @@ function wire() {
   document.addEventListener("click", (e) => {
     const card = e.target.closest("[data-id]");
     if (card) openDetail(card.dataset.id);
+    const rel = e.target.closest("[data-release]");
+    if (rel) openRelease(rel.dataset.release);
+    const oc = e.target.closest("[data-open-chart]");
+    if (oc) { $("#release").close(); openDetail(oc.dataset.openChart); }
+    const one = e.target.closest("[data-ics-one]");
+    if (one) exportIcs([eventById(one.dataset.icsOne)]);
+    const closer = e.target.closest("dialog [data-close]");
+    if (closer) closer.closest("dialog").close();
     if (e.target.closest("[data-goto-cal]")) { state.calCountry = state.country; store.set("calCountry", state.country); initCalendarFilters(); renderCalendar(); showView("calendar"); }
   });
   $("#detail-close").onclick = () => $("#detail").close();
-  $("#detail").addEventListener("click", (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
-  $("#detail").addEventListener("close", () => { tooltip.hidden = true; document.body.append(tooltip); });
+  for (const dlg of document.querySelectorAll("dialog")) {
+    dlg.addEventListener("click", (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+    dlg.addEventListener("close", () => { tooltip.hidden = true; document.body.append(tooltip); });
+  }
+  wireBuilder();
   $("#detail-table-toggle").onclick = (e) => {
     const on = e.currentTarget.getAttribute("aria-pressed") !== "true";
     e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Hide table" : "Show table";
     $("#detail-table").hidden = !on;
   };
-  $("#ics-export").onclick = exportIcs;
+  $("#ics-export").onclick = () => exportIcs();
   $("#el-ics").onclick = exportElectionsIcs;
   $("#theme-toggle").onclick = () => {
     const dark = document.documentElement.dataset.theme
@@ -468,8 +817,6 @@ async function init() {
 
   segmented($("#country-picker"), Object.entries(state.summary.countries).map(([c, v]) => [c, v.name]), state.country,
     (v) => { state.country = v; store.set("country", v); renderDashboard(); });
-  segmented($("#compare-range"), Object.keys(RANGES).map((k) => [k, k]), state.compareRange,
-    (v) => { state.compareRange = v; store.set("compareRange", v); renderCompare(); });
   initCalendarFilters();
 
   initElectionFilters();

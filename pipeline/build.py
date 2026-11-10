@@ -57,7 +57,7 @@ def _spark(obs, freq):
 
 
 def build_indicator(ind: dict) -> dict:
-    meta = {k: ind.get(k) for k in ("id", "country", "category", "concept", "name", "unit", "decimals", "source", "series", "chart", "note")}
+    meta = {k: ind.get(k) for k in ("id", "country", "category", "concept", "name", "unit", "decimals", "source", "series", "chart", "note", "hidden")}
     try:
         raw, url = FETCHERS[ind["source"]](ind)
         obs = transforms.apply(raw, ind.get("transform", "level"), ind.get("scale", 1.0), ind.get("window", 12))
@@ -132,10 +132,14 @@ def main(argv=None) -> int:
         existing = {o["id"]: o for o in json.loads((OUT / "summary.json").read_text(encoding="utf-8")).get("indicators", [])}
     merged = [results.get(i["id"]) or existing.get(i["id"]) or {"id": i["id"], "status": "missing"} for i in indicators]
 
+    explainers = _load("explainers.json")
+    for m in merged:
+        m["about"] = explainers["indicators"].get(m["id"])
+        m["hidden"] = next((bool(i.get("hidden")) for i in indicators if i["id"] == m["id"]), False)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     _write(OUT / "summary.json", {
         "generated_at": now, "countries": cfg["countries"], "categories": cfg["categories"],
-        "concepts": cfg["concepts"], "indicators": merged,
+        "concepts": cfg["concepts"], "indicators": merged, "release_about": explainers["releases"],
     })
 
     failed = [r for r in results.values() if r["status"] != "ok"]
