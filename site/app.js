@@ -116,17 +116,29 @@ function renderDashboard() {
 }
 
 function renderSidebar() {
-  const next = upcoming().filter((e) => e.country === state.country && e.importance !== "low").slice(0, 12);
+  const next = upcoming().filter((e) => e.country === state.country && e.importance !== "low").slice(0, 24);
   $("#side-title").textContent = `Next up · ${state.country}`;
-  $("#next-up").innerHTML = next.map((e) => {
-    const d = new Date(e.datetime_utc);
+  const days = new Map();
+  for (const e of next) {
+    const k = dayKey(new Date(e.datetime_utc));
+    if (!days.has(k)) days.set(k, []);
+    days.get(k).push(e);
+  }
+  $("#next-up").innerHTML = [...days.values()].map((evs) => {
+    const d = new Date(evs[0].datetime_utc);
     const rel = relDays(d);
     const soon = rel === "today" || rel === "tomorrow";
-    return `<button class="side-item${e.importance === "high" ? " high" : ""}" data-release="${e.id}" aria-label="${esc(e.title)}, ${fmtDay(d)}. Open details">
-      <span class="side-when"><span class="${soon ? "soon" : ""}">${soon ? rel[0].toUpperCase() + rel.slice(1) : fmtShortDay(d)}</span>${e.time_known ? ` · ${fmtTime(d)}` : ""}</span>
-      <span class="side-what">${esc(e.title)}</span>
-      ${e.importance === "high" ? `<span class="side-imp">High impact</span>` : ""}
-    </button>`;
+    const label = `${soon ? rel[0].toUpperCase() + rel.slice(1) + " · " : ""}${fmtShortDay(d)}`;
+    // On narrow screens the list becomes a row of cards and day headings are hidden,
+    // so each item also carries its own date (shown only there).
+    return `<div class="side-day"><div class="side-day-head${soon ? " soon" : ""}">${label}</div>${evs.map((e) => {
+      const t = new Date(e.datetime_utc);
+      return `<button class="side-item" data-release="${e.id}" aria-label="${esc(e.title)}, ${fmtDay(t)}. Open details">
+        <span class="side-time"><span class="side-date">${fmtShortDay(t)} · </span>${e.time_known ? fmtTime(t) : "TBC"}</span>
+        <span class="side-what">${esc(e.title)}</span>
+        ${e.importance === "high" ? `<span class="side-imp">High</span>` : ""}
+      </button>`;
+    }).join("")}</div>`;
   }).join("") || `<p class="note">No releases scheduled in the next 90 days.</p>`;
 }
 
@@ -745,6 +757,7 @@ function showView(view) {
   if (view === "compare" && !compareDrawn) { compareDrawn = true; renderWidgets(); }
   if (location.hash.slice(1) !== view) history.replaceState(null, "", `#${view}`);
   tooltip.hidden = true;
+  document.body.classList.toggle("dash-active", view === "dashboard");
 }
 
 function wire() {
