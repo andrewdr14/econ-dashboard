@@ -840,7 +840,7 @@ function buildSearchIndex() {
   const items = [];
   const pages = [
     ["dashboard", "Overview", "Headline figures for each economy"],
-    ["learn", "Learning Centre", "Today's explainer and country spotlight"],
+    ["learn", "Learning", "Today's explainer and country spotlight"],
     ["compare", "Compare", "Charts comparing economies; build your own"],
     ["calendar", "Release calendar", "When the next figures come out"],
     ["elections", "Elections", "National elections worldwide"],
