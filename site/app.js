@@ -840,6 +840,7 @@ function buildSearchIndex() {
   const items = [];
   const pages = [
     ["dashboard", "Overview", "Headline figures for each economy"],
+    ["learn", "Learning Centre", "Today's explainer and country spotlight"],
     ["compare", "Compare", "Charts comparing economies; build your own"],
     ["calendar", "Release calendar", "When the next figures come out"],
     ["elections", "Elections", "National elections worldwide"],
@@ -874,6 +875,19 @@ function buildSearchIndex() {
       run: () => openRelease(e.id),
     });
   }
+  const seenArt = new Set();
+  for (const iss of state.learning?.issues || []) {
+    for (const sr of ["explainers", "spotlights"]) {
+      const a = iss[sr];
+      if (seenArt.has(sr + a.slug)) continue;
+      seenArt.add(sr + a.slug);
+      items.push({
+        group: "Learning Centre", title: a.title, sub: `${LEARN_LABEL[sr]} · ${a.country || a.topic || ""} · ${a.minutes} min read`,
+        icon: sr === "spotlights" && a.iso2 ? flag(a.iso2) : "Aa", keys: `${a.title} ${a.dek} ${a.topic || ""} ${a.country || ""} article learn read explainer spotlight`,
+        run: () => { location.hash = `learn/${sr}/${a.slug}`; },
+      });
+    }
+  }
   const today = todayIso();
   for (const e of state.elections?.elections || []) {
     if (elIsPast(e, today)) continue;
@@ -895,14 +909,17 @@ function buildSearchIndex() {
 
 function runSearch(q) {
   const query = q.trim().toLowerCase();
-  const LIMITS = { Pages: 4, Statistics: 8, "Upcoming releases": 5, Elections: 5 };
+  const LIMITS = { Pages: 4, Statistics: 8, "Learning Centre": 4, "Upcoming releases": 5, Elections: 5 };
   let scored;
   if (!query) {
     // Suggestions: this economy's headline figures, the next releases, the pages.
     const head = new Set(glancePicks(state.country).map(([, i]) => i.name));
+    const iss0 = state.learning?.issues?.[0];
+    const todaysTitles = new Set(iss0 ? [iss0.explainers.title, iss0.spotlights.title] : []);
     scored = search.items.filter((it) =>
       (it.group === "Statistics" && head.has(it.title) && it.icon.includes(`>${state.country}<`)) ||
-      it.group === "Upcoming releases" || (it.group === "Pages" && it.icon === "→")).map((it) => ({ it, score: 1 }));
+      it.group === "Upcoming releases" || (it.group === "Pages" && it.icon === "→") ||
+      (it.group === "Learning Centre" && todaysTitles.has(it.title))).map((it) => ({ it, score: 1 }));
   } else {
     const tokens = query.split(/\s+/).filter(Boolean);
     scored = [];
@@ -921,7 +938,7 @@ function runSearch(q) {
       scored.push({ it, score });
     }
   }
-  const order = ["Statistics", "Upcoming releases", "Elections", "Pages"];
+  const order = ["Statistics", "Learning Centre", "Upcoming releases", "Elections", "Pages"];
   const out = [];
   for (const g of order) {
     const inG = scored.filter((x) => x.it.group === g).sort((a, b) => b.score - a.score).slice(0, LIMITS[g]);
@@ -946,7 +963,7 @@ function drawSearch(query) {
   }
   let html = "", group = "";
   search.results.forEach((it, i) => {
-    if (it.group !== group) { group = it.group; html += `<div class="sr-group" role="presentation">${!query && group === "Statistics" ? "Headline figures" : group}</div>`; }
+    if (it.group !== group) { group = it.group; html += `<div class="sr-group" role="presentation">${!query && group === "Statistics" ? "Headline figures" : !query && group === "Learning Centre" ? "Today's reading" : group}</div>`; }
     html += `<button class="sr-item" id="sr-${i}" role="option" data-i="${i}" aria-selected="${i === search.sel}">
       <span class="sr-icon">${it.icon}</span>
       <span style="min-width:0"><div class="sr-title">${esc(it.title)}</div><div class="sr-sub">${esc(it.sub)}</div></span>
@@ -1004,22 +1021,193 @@ function wireSearch() {
   });
 }
 
+// ---------------------------------------------------------------- learning centre
+const LEARN_LABEL = { explainers: "The Explainer", spotlights: "Country Spotlight" };
+const articleCache = {};
+let archFilter = store.get("archFilter", "all");
+
+const issueDay = (iso) => localDay(iso).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+function fmtWB(v, f) {
+  if (v == null) return "–";
+  if (f === "usd_bn") { const bn = v / 1e9; return bn >= 1000 ? `$${fmtNum(bn / 1000, 2)} trn` : `$${fmtNum(bn, bn >= 100 ? 0 : 1)} bn`; }
+  if (f === "usd") return `$${Math.round(v).toLocaleString("en-GB")}`;
+  if (f === "people_m") return v >= 1e9 ? `${fmtNum(v / 1e9, 2)} bn` : `${fmtNum(v / 1e6, 1)} m`;
+  if (f === "pct_gdp") return `${fmtNum(v, 1)}% of GDP`;
+  return `${fmtNum(v, 1)}%`;
+}
+const artTag = (s, a) => s === "spotlights" && a.iso2
+  ? `${flag(a.iso2 === "GB" ? "UK" : a.iso2)} ${esc(a.country || "")}`
+  : esc(a.topic || "Economics");
+
+function learnCard(s, a, big) {
+  return `<a class="learn-card ${s}${big ? " big" : ""}" href="#learn/${s}/${a.slug}">
+    <span class="lc-series">${LEARN_LABEL[s]}</span>
+    <span class="lc-tag">${artTag(s, a)}</span>
+    <span class="lc-title">${esc(a.title)}</span>
+    ${big ? `<span class="lc-dek">${esc(a.dek)}</span>` : ""}
+    <span class="lc-meta">${a.minutes} min read${big ? `<span class="lc-cta">Read now →</span>` : ""}</span>
+  </a>`;
+}
+
+function renderLearnHome() {
+  const L = state.learning;
+  if (!L) { $("#learn-today").innerHTML = `<div class="empty">The Learning Centre isn't available yet.</div>`; return; }
+  const today = L.issues[0];
+  $("#learn-kicker").textContent = `Learning Centre · Issue ${L.issue_number} · ${issueDay(today.date)}`;
+  $("#learn-today").innerHTML = learnCard("explainers", today.explainers, true) + learnCard("spotlights", today.spotlights, true);
+
+  const form = $("#sub-form");
+  if (L.buttondown_username) {
+    form.hidden = false;
+    form.action = `https://buttondown.com/api/emails/embed-subscribe/${encodeURIComponent(L.buttondown_username)}`;
+    $("#sub-alt").innerHTML = `Prefer a feed reader? <a href="feed.xml">RSS feed</a>`;
+  } else {
+    form.hidden = true;
+    $("#sub-alt").innerHTML = `Email sign-up is being set up. In the meantime you can follow the <a href="feed.xml">RSS feed</a>.`;
+  }
+
+  segmented($("#arch-filter"), [["all", "Both"], ["explainers", "Explainers"], ["spotlights", "Spotlights"]], archFilter,
+    (v) => { archFilter = v; store.set("archFilter", v); renderArchive(); });
+  renderArchive();
+}
+
+function renderArchive() {
+  const L = state.learning;
+  const past = L.issues.slice(1);
+  const show = archFilter === "all" ? ["explainers", "spotlights"] : [archFilter];
+  $("#learn-archive").innerHTML = past.length ? past.map((iss) => `
+    <div class="arch-row">
+      <div class="arch-date"><span class="d">${localDay(iss.date).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</span><span class="note">Issue ${iss.number}</span></div>
+      <div class="arch-items">${show.map((s) => learnCard(s, iss[s], false)).join("")}</div>
+    </div>`).join("")
+    : `<p class="note">This is the first issue. Earlier editions will appear here from tomorrow.</p>`;
+}
+
+async function loadArticle(s, slug) {
+  articleCache[`${s}/${slug}`] ??= fetch(`data/learning/${s}/${slug}.json`, { cache: "no-cache" }).then((r) => {
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  });
+  return articleCache[`${s}/${slug}`];
+}
+
+function electionText(e) {
+  if (!e) return "";
+  const when = e.precision === "day" ? localDay(e.date).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })
+    : e.precision === "month" ? `${MONTH_NAMES[e.month - 1]} ${e.year}` : e.precision === "by" ? `by ${localDay(e.date).toLocaleDateString(undefined, { month: "long", year: "numeric" })}` : `${e.year} (date not set)`;
+  return `<div class="aside-block"><div class="aside-label">Next national election</div>
+    <p><strong>${when}</strong><br>${e.offices.map((o) => `<a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.label)}</a>`).join(", ")}</p></div>`;
+}
+
+async function openArticle(s, slug) {
+  $("#learn-home").hidden = true;
+  const reader = $("#learn-reader");
+  reader.hidden = false;
+  $("#art-body").innerHTML = `<p class="note">Loading…</p>`;
+  $("#art-aside").innerHTML = "";
+  $("#art-foot").innerHTML = "";
+  window.scrollTo(0, 0);
+  let a;
+  try { a = await loadArticle(s, slug); } catch (err) {
+    $("#art-title").textContent = "Article not found";
+    $("#art-body").innerHTML = `<p>This article isn't available. <a href="#learn">Back to the Learning Centre</a>.</p>`;
+    return;
+  }
+  $("#art-kicker").innerHTML = `${LEARN_LABEL[s]} · ${artTag(s, a)}`;
+  $("#art-title").textContent = a.title;
+  $("#art-dek").textContent = a.dek;
+  $("#art-meta").innerHTML = `${issueDay(a.published)} · ${a.minutes} min read · ${a.words.toLocaleString("en-GB")} words`;
+  $("#art-body").innerHTML = a.html;
+  document.title = `${a.title} · Macro Monitor`;
+
+  const outline = a.outline.length ? `<nav class="aside-block art-toc" aria-label="In this article"><div class="aside-label">In this article</div><ol>${a.outline.map((o) =>
+    `<li><a href="#${o.id}" data-art-sec="${o.id}">${esc(o.text)}</a></li>`).join("")}</ol></nav>` : "";
+  let facts = "";
+  if (s === "spotlights") {
+    const rows = (a.data || []).map((d) => `<div class="kf-row"><dt>${esc(d.label)}</dt><dd>${fmtWB(d.value, d.format)} <span class="note">${d.year}</span></dd></div>`).join("");
+    facts = (rows ? `<div class="aside-block"><div class="aside-label">${artTag(s, a)} in numbers</div><dl class="kf">${rows}</dl>
+      <p class="note">Latest year available, World Bank. Updated weekly.</p></div>` : "")
+      + (a.leader_note ? `<div class="aside-block"><div class="aside-label">Leadership</div><p>${esc(a.leader_note)}</p></div>` : "")
+      + electionText(a.next_election);
+  } else if (a.tags?.length) {
+    facts = `<div class="aside-block"><div class="aside-label">Topics</div><p class="tags">${a.tags.map((t) => `<span class="badge">${esc(t)}</span>`).join(" ")}</p></div>`;
+  }
+  $("#art-aside").innerHTML = facts + outline;
+
+  // Previous / next in the archive (same series).
+  const list = state.learning.issues.map((i) => i[s]).filter((x, k, arr) => arr.findIndex((y) => y.slug === x.slug) === k);
+  const idx = list.findIndex((x) => x.slug === slug);
+  const newer = list[idx - 1], older = list[idx + 1];
+  const other = s === "explainers" ? "spotlights" : "explainers";
+  const sameDay = state.learning.issues.find((i) => i[s].slug === slug)?.[other];
+  $("#art-foot").innerHTML = `
+    ${sameDay ? `<div class="also"><div class="aside-label">Also in this issue</div>${learnCard(other, sameDay, false)}</div>` : ""}
+    <div class="art-nav">
+      ${older ? `<a class="btn ghost" href="#learn/${s}/${older.slug}">← ${esc(older.title)}</a>` : "<span></span>"}
+      ${newer ? `<a class="btn ghost" href="#learn/${s}/${newer.slug}">${esc(newer.title)} →</a>` : ""}
+    </div>
+    <div class="art-actions"><button class="btn" id="copy-link">Copy link</button><a class="btn ghost" href="#learn">All articles</a>
+      <a class="btn ghost" href="#learn" data-scroll-sub>Get these by email</a></div>`;
+  updateReadBar();
+}
+
+function updateReadBar() {
+  const r = $("#learn-reader");
+  if (r.hidden) return;
+  const body = $("#art-body").getBoundingClientRect();
+  const done = Math.min(1, Math.max(0, (innerHeight * 0.4 - body.top) / Math.max(1, body.height)));
+  $("#read-bar").style.width = `${(done * 100).toFixed(1)}%`;
+}
+
+function showLearn(rest) {
+  if (rest.length >= 2 && LEARN_LABEL[rest[0]]) return openArticle(rest[0], rest[1]);
+  $("#learn-reader").hidden = true;
+  $("#learn-home").hidden = false;
+  document.title = "Learning Centre · Macro Monitor";
+  renderLearnHome();
+}
+
+function wireLearn() {
+  addEventListener("scroll", updateReadBar, { passive: true });
+  document.addEventListener("click", async (e) => {
+    const sec = e.target.closest("[data-art-sec]");
+    if (sec) { e.preventDefault(); document.getElementById(sec.dataset.artSec)?.scrollIntoView({ behavior: "smooth" }); }
+    if (e.target.closest("#copy-link")) {
+      try { await navigator.clipboard.writeText(location.href); e.target.textContent = "Link copied"; } catch { prompt("Copy this link:", location.href); }
+    }
+    if (e.target.closest("[data-scroll-sub]")) setTimeout(() => $("#subscribe").scrollIntoView({ behavior: "smooth" }), 50);
+  });
+}
+
 // ---------------------------------------------------------------- views & wiring
 let compareDrawn = false;
-function showView(view) {
-  if (!["dashboard", "compare", "calendar", "elections", "about"].includes(view)) view = "dashboard";
+// Hash routes: #view or #learn/<series>/<slug>.
+function route() {
+  const [view, ...rest] = location.hash.slice(1).split("/");
+  showView(view || "dashboard", rest);
+}
+
+function showView(view, rest = []) {
+  if (!["dashboard", "learn", "compare", "calendar", "elections", "about"].includes(view)) view = "dashboard";
   const changed = document.querySelector(`#view-${view}`)?.hidden;
   document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.view === view));
   document.querySelectorAll(".view").forEach((v) => (v.hidden = v.id !== `view-${view}`));
   if (view === "compare" && !compareDrawn) { compareDrawn = true; renderWidgets(); }
-  if (location.hash.slice(1) !== view) history.replaceState(null, "", `#${view}`);
+  if (location.hash.slice(1).split("/")[0] !== view) history.replaceState(null, "", `#${view}`);
   tooltip.hidden = true;
   if (changed) window.scrollTo(0, 0);
+  if (view === "learn") showLearn(rest);
+  else document.title = "Macro Monitor";
 }
 
 function wire() {
-  $(".tabs").addEventListener("click", (e) => { const b = e.target.closest("button[data-view]"); if (b) showView(b.dataset.view); });
-  window.addEventListener("hashchange", () => showView(location.hash.slice(1)));
+  $(".tabs").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-view]");
+    if (!b) return;
+    if (location.hash.slice(1) !== b.dataset.view) location.hash = b.dataset.view; else route();
+  });
+  window.addEventListener("hashchange", route);
+  wireLearn();
   document.addEventListener("click", (e) => {
     const card = e.target.closest("[data-id]");
     if (card) openDetail(card.dataset.id);
@@ -1070,14 +1258,16 @@ function initCalendarFilters() {
 async function init() {
   wire();
   try {
-    const [summary, cal, els] = await Promise.all([
+    const [summary, cal, els, learn] = await Promise.all([
       fetch("data/summary.json", { cache: "no-cache" }).then((r) => r.json()),
       fetch("data/calendar.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : { events: [], warnings: ["calendar.json missing"] })),
       fetch("data/elections.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      fetch("data/learning.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
     state.summary = summary;
     state.calendar = cal;
     state.elections = els;
+    state.learning = learn;
   } catch (err) {
     $("#dashboard").innerHTML = `<div class="empty">Couldn't load data. Run <code>python -m pipeline.build</code> first. (${err.message})</div>`;
     return;
@@ -1096,7 +1286,7 @@ async function init() {
   renderDashboard();
   renderCalendar();
   renderElections();
-  showView(location.hash.slice(1) || "dashboard");
+  route();
 }
 
 init();

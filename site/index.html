@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=dev">
+  <link rel="alternate" type="application/rss+xml" title="Macro Monitor: Learning Centre" href="feed.xml">
   <script>
     try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
   </script>
@@ -41,6 +42,7 @@
     <div class="wrap">
       <nav class="tabs" role="tablist" aria-label="Sections of the site">
         <button role="tab" data-view="dashboard" aria-selected="true">Overview</button>
+        <button role="tab" data-view="learn" aria-selected="false">Learning Centre</button>
         <button role="tab" data-view="compare" aria-selected="false">Compare</button>
         <button role="tab" data-view="calendar" aria-selected="false">Release calendar</button>
         <button role="tab" data-view="elections" aria-selected="false">Elections</button>
@@ -84,6 +86,54 @@
           <div id="next-up" class="side-list"></div>
         </aside>
       </div>
+    </section>
+
+    <!-- ======================================================= learning centre -->
+    <section id="view-learn" class="view wrap" hidden aria-labelledby="learn-title">
+      <div id="learn-home">
+        <header class="page-head learn-head">
+          <p class="kicker" id="learn-kicker">Learning Centre</p>
+          <h1 id="learn-title">This morning’s reading</h1>
+          <p class="lede">Two short reads, published every morning at 6am UK time: an explainer on an idea in economics, and a spotlight on one country’s economy. Each takes ten minutes or less, about the length of a coffee.</p>
+        </header>
+        <div class="learn-today" id="learn-today"></div>
+
+        <section class="subscribe" id="subscribe" aria-labelledby="sub-title">
+          <div class="sub-copy">
+            <h2 id="sub-title">Get both articles by email</h2>
+            <p>One short email each morning with today’s explainer and country spotlight. No spam, unsubscribe in one click.</p>
+          </div>
+          <form class="sub-form" id="sub-form" method="post" target="_blank" action="#">
+            <label class="visually-hidden" for="sub-email">Email address</label>
+            <input id="sub-email" type="email" name="email" required placeholder="you@example.com" autocomplete="email">
+            <input type="hidden" name="tag" value="learning-centre">
+            <button class="btn primary" type="submit">Subscribe</button>
+          </form>
+          <p class="note sub-alt" id="sub-alt">Prefer a feed reader? <a href="feed.xml">RSS feed</a></p>
+        </section>
+
+        <section class="archive" aria-labelledby="arch-title">
+          <div class="cat-head"><div><h2 id="arch-title">Previous editions</h2><p class="cat-desc">Every issue so far. New articles are added to the library over time.</p></div>
+            <div class="seg" id="arch-filter" role="radiogroup" aria-label="Show"></div></div>
+          <div id="learn-archive"></div>
+        </section>
+      </div>
+
+      <article id="learn-reader" class="reader" hidden aria-labelledby="art-title">
+        <div class="read-progress" aria-hidden="true"><span id="read-bar"></span></div>
+        <a class="back-link" href="#learn">← Learning Centre</a>
+        <header class="art-head">
+          <p class="kicker" id="art-kicker"></p>
+          <h1 id="art-title"></h1>
+          <p class="art-dek" id="art-dek"></p>
+          <p class="art-meta" id="art-meta"></p>
+        </header>
+        <div class="art-layout">
+          <div class="art-body" id="art-body"></div>
+          <aside class="art-aside" id="art-aside"></aside>
+        </div>
+        <footer class="art-foot" id="art-foot"></footer>
+      </article>
     </section>
 
     <!-- ======================================================= compare -->
@@ -162,6 +212,7 @@
           <ul class="howto">
             <li><strong>Overview</strong>: choose an economy on the left. Each card shows the latest figure, the change since the previous one and a 3-year trend line. Click a card for the full history, a data table and an explainer.</li>
             <li><strong>Upcoming releases</strong> (right of the Overview): click any release to see what it measures, why it matters and the current figures.</li>
+            <li><strong>Learning Centre</strong>: a 10-minute economics explainer and a country spotlight every morning, with an email option.</li>
             <li><strong>Compare</strong>: put the same statistic for several economies on one chart, or build your own.</li>
             <li><strong>Search</strong>: press <kbd>/</kbd> or <kbd>Ctrl</kbd> <kbd>K</kbd> anywhere to find a statistic, release or election.</li>
           </ul>
@@ -196,6 +247,7 @@
               <tr><td><a href="https://www.gov.uk/government/organisations/home-office/about/research#statistics" rel="noopener">Home Office</a></td><td>Small boats, asylum, visas</td></tr>
               <tr><td><a href="https://ec.europa.eu/eurostat" rel="noopener">Eurostat</a></td><td>Euro area prices, GDP, labour, industry, public finances; release dates</td></tr>
               <tr><td><a href="https://data.ecb.europa.eu/" rel="noopener">European Central Bank</a></td><td>Deposit rate, yield curve, euro</td></tr>
+              <tr><td><a href="https://data.worldbank.org/" rel="noopener">World Bank</a></td><td>Key figures in Country Spotlights</td></tr>
               <tr><td><a href="https://en.wikipedia.org/wiki/List_of_elections_in_2026" rel="noopener">Wikipedia</a> (CC BY-SA) and <a href="https://www.wikidata.org/" rel="noopener">Wikidata</a></td><td>Election calendar</td></tr>
             </tbody>
           </table>
@@ -214,7 +266,7 @@
         <span class="note">Official statistics, explained. Refreshed every weekday.</span>
       </div>
       <nav class="foot-links" aria-label="Footer">
-        <a href="#dashboard">Overview</a><a href="#compare">Compare</a><a href="#calendar">Release calendar</a><a href="#elections">Elections</a><a href="#about">About &amp; sources</a>
+        <a href="#dashboard">Overview</a><a href="#learn">Learning Centre</a><a href="#compare">Compare</a><a href="#calendar">Release calendar</a><a href="#elections">Elections</a><a href="#about">About &amp; sources</a>
       </nav>
       <p class="foot-src">Data from FRED, BEA, US CBP, ONS, the Bank of England, the Home Office, Eurostat and the ECB. Elections from Wikipedia (CC BY-SA) and Wikidata. Not investment advice.</p>
     </div>

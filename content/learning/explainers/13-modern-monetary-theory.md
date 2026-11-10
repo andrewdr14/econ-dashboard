@@ -1,0 +1,100 @@
+---
+title: "Modern Monetary Theory: claims and critiques"
+dek: MMT says governments that issue their own currency face an inflation limit, not a money limit. Its supporters call it realism; its critics call it a recipe for trouble.
+topic: Schools of thought
+tags: MMT, modern monetary theory, fiscal policy, money, inflation, job guarantee, schools of thought
+---
+
+Ask most people how a government pays for things, and they will describe something like a household: it collects taxes, spends the money, and borrows to cover any shortfall, which it must one day repay. Modern Monetary Theory, usually shortened to MMT, says this picture is upside down. For a country that issues its own currency, its advocates argue, spending comes first and taxes come later; the government can never run out of its own money; and the real limit on what it can do is not the size of the deficit but the risk of inflation. Around 2019 and 2020, these ideas leapt from academic obscurity into newspaper columns and political debates, especially in the United States. Supporters saw a liberating new understanding of public finance. Most mainstream economists saw old errors in new clothes. Here is a fair account of what MMT claims, where it has a point, and where its critics think it goes wrong.
+
+## Where MMT comes from
+
+MMT took shape in the 1990s through the work of a small group of economists and one financier. Warren Mosler, an American investment manager, developed many of its core ideas from his experience of trading government bonds. Academics including L. Randall Wray, Stephanie Kelton and Pavlina Tcherneva in the United States and Bill Mitchell in Australia built them into a broader framework. Kelton's 2020 book *The Deficit Myth* brought the ideas to a wide audience, and she had previously advised Bernie Sanders's presidential campaign.
+
+MMT draws on older traditions. From the German economist Georg Friedrich Knapp, who published *The State Theory of Money* in 1905, it takes **chartalism**: the view that money is a creation of the state rather than something that emerged spontaneously from barter. From Abba Lerner, who wrote about **functional finance** in the 1940s, it takes the idea that governments should judge fiscal policy by its effects on the economy, on unemployment and inflation, rather than by whether the budget balances. And from Hyman Minsky, it takes an interest in financial instability and in the government as employer of last resort.
+
+## The core claims
+
+### 1. A currency issuer cannot run out of its own money
+
+The central MMT claim is about **monetary sovereignty**. A government like the UK, the US or Japan, which issues its own currency, lets it float and borrows in it, is not financially constrained the way a household or a business is. It can always create the pounds, dollars or yen needed to pay bills and debts denominated in that currency.
+
+On this view, the US cannot "go broke" in dollars, in the way a household can run out of money. The same is not true for countries that use someone else's currency. Greece and Italy in the euro area, or an emerging economy borrowing in dollars, are currency *users*, not issuers, and MMT agrees they face genuine financial constraints.
+
+It is worth noting that most mainstream economists accept the narrow version of this point: a country that borrows in its own currency need never be forced into involuntary default. The disagreement is about what follows from it.
+
+### 2. Taxes drive money, and spending comes first
+
+MMT argues that people accept a government's currency, in the first place, because they need it to pay taxes. The state creates demand for its money by demanding it back.
+
+From this follows a striking claim about sequence. In MMT's account, the government does not need to collect taxes before it can spend; when it spends, it creates money by crediting bank accounts, and taxation then removes money from the economy. Taxes, in this framing, do not "pay for" spending. Their main jobs are to create demand for the currency, to manage inflation by reducing private spending power, and to shape behaviour and the distribution of income.
+
+Similarly, MMT argues that government bond sales are not really about "financing" spending. They give the private sector an interest-bearing alternative to holding reserves, and they help the central bank manage interest rates.
+
+### 3. Inflation, not the deficit, is the real constraint
+
+If money is not the constraint, what is? MMT's answer is **real resources**: workers, machines, materials and energy. A government can spend as much as it likes in money terms, but if it tries to buy more goods and services than the economy can produce, prices will rise.
+
+So the right question, MMT says, is not "can we afford it?" but "do we have the spare capacity to do it without causing inflation?" When there is high unemployment and idle factories, deficits can be larger with little risk. When the economy is running hot, the government should spend less or tax more, regardless of what the deficit is.
+
+> In MMT's view, the question is never whether the government can pay, but whether the economy has the workers and materials to supply what it buys without driving up prices.
+
+### 4. Fiscal policy should do the heavy lifting
+
+In mainstream practice, independent central banks manage inflation and the business cycle mainly by setting interest rates, while governments try to keep borrowing under control. MMT would reverse those roles. It sees fiscal policy, taxes and spending, as the main tool for keeping the economy at full employment with stable prices. Many MMT economists favour keeping interest rates permanently low, even at zero, and are sceptical that rate rises reliably curb inflation.
+
+### 5. A job guarantee
+
+The most distinctive policy proposal associated with MMT is a **job guarantee**. The government would offer a job at a fixed wage to anyone who wants one, typically in community services, care work or environmental projects. In a recession, more people would take these jobs and public spending would rise automatically; in a boom, workers would leave for private-sector jobs paying more.
+
+Supporters argue this would eliminate involuntary unemployment and act as a powerful automatic stabiliser, with the fixed wage serving as an anchor for prices. They point to schemes such as Argentina's Jefes de Hogar programme after its 2001-02 crisis as partial precedents.
+
+## The mainstream critiques
+
+Critics of MMT range from conservative economists to prominent figures on the centre-left, such as Larry Summers and Paul Krugman. A 2019 survey of leading US economists by the IGM Forum at the University of Chicago found virtually none agreed that countries borrowing in their own currency need not worry about deficits because they can always create money. The main objections are these.
+
+### Inflation control in practice
+
+Critics accept that inflation is the constraint, in theory, but doubt MMT's proposed way of managing it. Raising taxes or cutting spending to cool an overheating economy requires fast, unpopular decisions by politicians. History, critics argue, suggests that governments are much better at loosening than tightening. That is precisely why many countries handed inflation control to independent central banks, which can raise interest rates within weeks.
+
+### Expectations and credibility
+
+Mainstream economics places great weight on **inflation expectations**. If people come to believe that a government will create money freely to fund spending, they may expect higher inflation, demand higher wages and raise prices pre-emptively, making inflation harder to stop. Critics say MMT underplays this risk.
+
+### Interest rates and markets
+
+MMT's preference for very low interest rates and its relaxed view of deficits worry critics who see a danger of **fiscal dominance**: a situation in which monetary policy is effectively subordinate to the government's budget needs. Historical cases of high inflation, such as Weimar Germany in the early 1920s or Zimbabwe in the late 2000s, involved governments printing money to cover spending. MMT advocates respond that those cases involved collapsing productive capacity, foreign-currency debts or war reparations, and are not counter-examples to their argument.
+
+### The open economy
+
+Critics also argue that MMT applies most comfortably to the United States, whose dollar is the world's reserve currency. For smaller economies with their own currencies, large deficits financed by money creation could lead to a collapsing exchange rate, imported inflation and capital flight long before domestic resources are fully used.
+
+### "What's new is not true, and what's true is not new"
+
+A recurring complaint is that MMT's valid insights are already part of mainstream economics. Economists have long understood that a currency-issuing government cannot be forced into default, that deficits can be appropriate in a slump, and that inflation is the eventual limit on monetary financing. Keynesians have argued for decades that fiscal policy matters most when interest rates are near zero. On this view, MMT's genuinely new claims, such as its scepticism about interest rates as a tool, are the ones most likely to be wrong.
+
+## MMT's responses
+
+MMT economists push back on several fronts. They argue that critics often attack a caricature: MMT does not say deficits never matter or that governments should print without limit. They say mainstream models were themselves wrong about the 2010s, when large deficits and quantitative easing in many countries did not produce the inflation or higher interest rates that some had predicted. Japan, with very high public debt and long periods of low inflation, is frequently cited.
+
+They also argue that MMT is in part *descriptive*: an account of how government spending, central bank reserves and bond issuance actually work in operational terms, which some central bank publications have broadly echoed. Supporters say this description stands regardless of whether one accepts MMT's policy prescriptions.
+
+## Worked example: the 2021-22 inflation as a test
+
+The burst of inflation after the pandemic is the nearest thing to a real-world test, and both sides claim it supports them.
+
+In 2020 and 2021 the US, UK and other governments ran very large deficits to support households and businesses, while central banks bought government bonds on a vast scale. The US in particular added further large stimulus in early 2021. Inflation then rose sharply, peaking at about 9% in the US in mid-2022 and around 11% in the UK later that year.
+
+**Critics' reading:** this is exactly what happens when governments spend freely and treat deficits as unimportant. Summers warned in early 2021 that the American stimulus risked overheating the economy. Inflation was eventually brought down mainly by aggressive interest rate rises, the tool MMT tends to downplay, not by fiscal tightening.
+
+**MMT supporters' reading:** the inflation came largely from supply shocks, such as energy prices after Russia's invasion of Ukraine and disrupted supply chains, not from excessive deficits as such. They note that inflation also surged in countries with much smaller fiscal responses. Some argue it eased as supply problems faded, and that interest rate rises deserve less credit than central banks claim.
+
+A fair summary is that the episode supported MMT's claim that the real constraint is inflation and resources, while also highlighting the critics' central worry: that by the time governments realise they have hit that constraint, prices are already rising, and it is politically difficult to tighten fiscal policy quickly. Most economists conclude that demand, including fiscal stimulus, and supply shocks both contributed, with the balance differing by country.
+
+## Key takeaways
+
+- MMT argues that governments issuing their own floating currency cannot run out of money; the real limit on spending is inflation and the availability of real resources.
+- It sees taxes as creating demand for currency and controlling inflation rather than "funding" spending, and favours fiscal policy and a job guarantee over interest rates as the main tools.
+- Mainstream economists accept the narrow point about default but doubt that politicians can tighten fast enough to control inflation, and worry about expectations, exchange rates and fiscal dominance.
+- Critics say MMT's correct insights are not new; supporters say critics attack a caricature and that MMT accurately describes how public money works.
+- The 2021-22 inflation is claimed by both sides, and most economists see it as the product of both strong demand and supply shocks.

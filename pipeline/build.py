@@ -32,7 +32,7 @@ def _load_dotenv(path: Path = ROOT / ".env") -> None:
 
 _load_dotenv()
 
-from . import calendar, elections, transforms  # noqa: E402
+from . import calendar, elections, learning, transforms  # noqa: E402
 from .sources import FETCHERS  # noqa: E402
 
 CONFIG = ROOT / "config"
@@ -106,17 +106,29 @@ def build_elections() -> None:
         print(f"  elections warning: {w}")
 
 
+def build_learning() -> None:
+    try:
+        res = learning.build(_load("learning.json"))
+        iss = res["issues"][0]
+        print(f"  learning: issue {res['issue_number']} ({iss['date']}): {iss['explainers']['title']} / {iss['spotlights']['title']}")
+    except Exception as exc:  # keep the previous issue rather than failing the whole build
+        print(f"  learning: FAILED ({exc}); keeping previous data")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", nargs="*", help="indicator ids to refresh")
     ap.add_argument("--skip-calendar", action="store_true")
     ap.add_argument("--skip-elections", action="store_true")
     ap.add_argument("--only-elections", action="store_true", help="just refresh the election calendar")
+    ap.add_argument("--only-learning", action="store_true", help="just publish the Learning Centre issue")
     args = ap.parse_args(argv)
 
-    if not args.skip_elections:
+    if not args.skip_elections and not args.only_learning:
         build_elections()
-    if args.only_elections:
+    if not args.only_elections:
+        build_learning()
+    if args.only_elections or args.only_learning:
         return 0
 
     cfg = _load("series.json")

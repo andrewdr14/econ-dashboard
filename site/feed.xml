@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <title>Macro Monitor: Learning Centre</title>
+  <link>https://andrewdr14.github.io/econ-dashboard/#learn</link>
+  <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
+  <language>en-gb</language>
+  <item>
+    <title>The Explainer: How inflation is measured</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/how-inflation-is-measured</link>
+    <guid isPermaLink="false">explainers-how-inflation-is-measured-2026-11-10</guid>
+    <pubDate>Tue, 10 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Behind every headline inflation figure sits a basket of hundreds of items, thousands of price checks and a surprising number of judgement calls. Here is how it works.</description>
+  </item>
+  <item>
+    <title>Country Spotlight: Germany: the workshop of Europe at a crossroads</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/germany</link>
+    <guid isPermaLink="false">spotlights-germany-2026-11-10</guid>
+    <pubDate>Tue, 10 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Europe&#x27;s largest economy built its prosperity on cars, machines and cheap energy. Now all three pillars are being tested at once.</description>
+  </item>
+</channel>
+</rss>

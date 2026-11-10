@@ -1,0 +1,70 @@
+{
+"DEU": {
+"fetched": "2026-11-10",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 5050922925047.05,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 60496.4350820414,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 0.239578342117881,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 2.17178770949721,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 3.711,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 83491249,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 40.4347738545071,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 38.0780373654056,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": 4.44736378284623,
+"year": "2025"
+}
+]
+}
+}

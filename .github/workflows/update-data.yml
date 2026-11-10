@@ -2,6 +2,8 @@ name: Update data & deploy
 
 on:
   schedule:
+    # Every day 06:00 UTC (06:00 GMT / 07:00 BST): publish the Learning Centre issue and email it.
+    - cron: "0 6 * * *"
     # Weekdays, UTC: after UK 07:00 releases, after US 08:30/10:00 ET releases, and end of day.
     - cron: "30 7 * * 1-5"
     - cron: "15 15 * * 1-5"
@@ -41,7 +43,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add site/data data_cache
+          git add site/data site/feed.xml data_cache
           if git diff --cached --quiet; then
             echo "No data changes"
           else
@@ -66,3 +68,29 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  newsletter:
+    # After the site is live, so links in the email work. Sends at most once per issue.
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Send today's Learning Centre email
+        env:
+          BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
+        run: python -m pipeline.newsletter
+      - name: Record what was sent
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data_cache/newsletter.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Nothing to record"; else
+            git commit -m "Record newsletter send $(date -u +%Y-%m-%d)"
+            git pull --rebase -X theirs && git push
+          fi

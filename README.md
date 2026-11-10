@@ -8,6 +8,10 @@ A scheduled GitHub Actions job refreshes the data and redeploys to GitHub Pages.
 - **Search**: press `/` or `Ctrl K` anywhere to jump to a statistic, upcoming release, election or page.
 - **Overview** (formerly Dashboard): pick an economy on the left; a plain-English summary and four headline figures sit at the top,
   then sections with a contents list that tracks your scroll, and upcoming releases on the right.
+- **Learning Centre**: every morning (06:00 UK time) a new issue with two 10-minute reads, an economics
+  **Explainer** and a **Country Spotlight** (with a live World Bank data panel and the country's next election),
+  a reading view with progress bar and contents, an archive of past issues, an RSS feed (`feed.xml`) and
+  email alerts through Buttondown.
 - **About & sources**: how to read the figures (glossary), update schedule, caveats, sources and a citation.
 - **Dashboard cards**: latest value, change on the previous period, sparkline and next release date for each indicator. Click a card for the full history (1Y / 5Y / 10Y / Max, hover tooltips, table view) and a plain-English explainer.
   A **Next up** sidebar lists the country's upcoming releases; click one for a pop-up with what the statistic measures, why it matters, the latest and previous values, and when it comes out.
@@ -44,6 +48,22 @@ Notes:
   (e.g. US 2028, UK by Aug 2029) and is ignored once Wikipedia covers that year.
 - Eurostat's euro area aggregate changed to EA21 in 2026 (Bulgaria joined); HICP moved to `prc_hicp_minr` (ECOICOP v2).
 
+## Learning Centre
+
+Articles are Markdown files in `content/learning/explainers/` and `content/learning/spotlights/`
+(format and house style in `content/learning/STYLE.md`). Issue *n* (counting from `start_date` in
+`config/learning.json`) uses the *n*-th file of each folder, wrapping round when a folder runs out, so
+**to add articles, drop new numbered files into the folders**; they're used once the rotation reaches them.
+
+Email alerts use [Buttondown](https://buttondown.com):
+
+1. Create a Buttondown newsletter; put its username in `buttondown_username` in `config/learning.json`
+   (this switches on the sign-up form).
+2. Add the API key (Buttondown → Settings → API) as the repository secret `BUTTONDOWN_API_KEY`.
+3. The workflow's 06:00 UTC run publishes the issue, deploys, then the `newsletter` job sends one email
+   with both articles. It sends at most once per issue and only in the morning window
+   (`data_cache/newsletter.json` records the last send). Preview with `python -m pipeline.newsletter --dry-run`.
+
 ## Running locally
 
 ```bash
@@ -62,6 +82,7 @@ Useful options:
 python -m pipeline.build --only uk_cpi_yoy us_cpi_yoy   # refresh a subset
 python -m pipeline.build --skip-calendar
 python -m pipeline.build --only-elections               # just the election calendar
+python -m pipeline.build --only-learning                # just the Learning Centre issue
 ```
 
 ## Adding an indicator or a country
@@ -99,6 +120,9 @@ pipeline/      Python fetchers (standard library + tzdata)
   spreadsheets.py  stdlib ODS/XLSX readers
   calendar.py  ONS, FRED, BEA and central bank release calendars
   elections.py Wikipedia/Wikidata election calendar
+  learning.py  Learning Centre issues, Markdown rendering, World Bank panels, RSS
+  newsletter.py  daily Buttondown email
+content/learning/  explainer and country spotlight articles (Markdown)
   build.py     entry point; writes site/data/*.json
 site/          static frontend (no build step)
   data/        generated JSON (committed by the workflow)
