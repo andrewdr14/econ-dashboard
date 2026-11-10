@@ -1091,12 +1091,38 @@ async function loadArticle(s, slug) {
   return articleCache[`${s}/${slug}`];
 }
 
-function electionText(e) {
+function electionCard(e) {
   if (!e) return "";
-  const when = e.precision === "day" ? localDay(e.date).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })
-    : e.precision === "month" ? `${MONTH_NAMES[e.month - 1]} ${e.year}` : e.precision === "by" ? `by ${localDay(e.date).toLocaleDateString(undefined, { month: "long", year: "numeric" })}` : `${e.year} (date not set)`;
-  return `<div class="aside-block"><div class="aside-label">Next national election</div>
-    <p><strong>${when}</strong><br>${e.offices.map((o) => `<a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.label)}</a>`).join(", ")}</p></div>`;
+  const exact = e.precision === "day" || e.precision === "by";
+  const d = exact ? localDay(e.date) : null;
+  const tile = exact
+    ? `<div class="date-tile"><span class="dt-m">${d.toLocaleDateString(undefined, { month: "short" })}</span><span class="dt-d">${d.getDate()}</span><span class="dt-y">${d.getFullYear()}</span></div>`
+    : `<div class="date-tile tbc"><span class="dt-m">${e.precision === "month" ? MONTH_NAMES[e.month - 1].slice(0, 3) : "Date"}</span><span class="dt-d">${e.precision === "month" ? "–" : "TBC"}</span><span class="dt-y">${e.year}</span></div>`;
+  const when = e.precision === "by" ? "Must be held by this date" : exact ? relDays(d)[0].toUpperCase() + relDays(d).slice(1) : e.precision === "month" ? "Day not yet set" : "Date not yet set";
+  return `<div class="pol-row">${tile}<div><div class="pol-k">Next national election</div>
+    <div class="pol-v">${e.offices.map((o) => `<a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.label)}</a>`).join(", ")}</div>
+    <div class="note">${when}</div></div></div>`;
+}
+
+// Spotlight fact file: four headline figures as tiles, the rest as a short list.
+function factFile(a) {
+  const data = a.data || [];
+  if (!data.length) return "";
+  const years = data.map((d) => d.year);
+  const mainYear = years.sort((x, y) => years.filter((v) => v === y).length - years.filter((v) => v === x).length)[0];
+  const yr = (d) => (d.year !== mainYear ? ` <span class="ff-yr">${d.year}</span>` : "");
+  const by = Object.fromEntries(data.map((d) => [d.code, d]));
+  const tiles = ["NY.GDP.MKTP.CD", "NY.GDP.PCAP.CD", "NY.GDP.MKTP.KD.ZG", "FP.CPI.TOTL.ZG"].map((c) => by[c]).filter(Boolean);
+  const rest = data.filter((d) => !tiles.includes(d));
+  const short = { "NY.GDP.MKTP.CD": "Economy size", "NY.GDP.PCAP.CD": "Income per person", "NY.GDP.MKTP.KD.ZG": "Real growth", "FP.CPI.TOTL.ZG": "Inflation" };
+  const tileVal = (d) => d.format === "usd" ? `$${fmtNum(d.value / 1000, d.value >= 10000 ? 0 : 1)}k` : fmtWB(d.value, d.format).replace(" of GDP", "");
+  const restVal = (d) => d.format === "pct_gdp" ? `${fmtNum(d.value, 1)}<small>% GDP</small>` : fmtWB(d.value, d.format);
+  return `<section class="rail-card fact-file" aria-label="${esc(a.country)} key figures">
+    <header class="rc-head"><span class="rc-title">${flag(a.iso2)} ${esc(a.country)} in numbers</span><span class="rc-sub">World Bank, ${mainYear}</span></header>
+    <div class="ff-tiles">${tiles.map((d) => `<div class="ff-tile"><span class="ff-v">${tileVal(d)}${yr(d)}</span><span class="ff-k">${short[d.code]}</span></div>`).join("")}</div>
+    ${rest.length ? `<dl class="ff-list">${rest.map((d) => `<div><dt>${esc(d.label)}</dt><dd>${restVal(d)}${yr(d)}</dd></div>`).join("")}</dl>` : ""}
+    <p class="rc-foot">Latest annual figures. Refreshed weekly.</p>
+  </section>`;
 }
 
 async function openArticle(s, slug) {
@@ -1113,35 +1139,62 @@ async function openArticle(s, slug) {
     $("#art-body").innerHTML = `<p>This article isn't available. <a href="#learn">Back to the Learning Centre</a>.</p>`;
     return;
   }
-  $("#art-kicker").innerHTML = `${LEARN_LABEL[s]} · ${artTag(s, a)}`;
+  $("#art-kicker").innerHTML = `<span class="series-pill ${s}">${LEARN_LABEL[s]}</span><span class="kick-tag">${artTag(s, a)}</span>`;
   $("#art-title").textContent = a.title;
   $("#art-dek").textContent = a.dek;
-  $("#art-meta").innerHTML = `${issueDay(a.published)} · ${a.minutes} min read · ${a.words.toLocaleString("en-GB")} words`;
+  $("#art-meta").innerHTML = `<span>${issueDay(a.published)}</span><span>${a.minutes} min read</span><span>${a.words.toLocaleString("en-GB")} words</span>`;
   $("#art-body").innerHTML = a.html;
   document.title = `${a.title} · Macro Monitor`;
 
-  const outline = a.outline.length ? `<nav class="aside-block art-toc" aria-label="In this article"><div class="aside-label">In this article</div><ol>${a.outline.map((o) =>
-    `<li><a href="#${o.id}" data-art-sec="${o.id}">${esc(o.text)}</a></li>`).join("")}</ol></nav>` : "";
-  let facts = "";
-  if (s === "spotlights") {
-    const rows = (a.data || []).map((d) => `<div class="kf-row"><dt>${esc(d.label)}</dt><dd>${fmtWB(d.value, d.format)} <span class="note">${d.year}</span></dd></div>`).join("");
-    facts = (rows ? `<div class="aside-block"><div class="aside-label">${artTag(s, a)} in numbers</div><dl class="kf">${rows}</dl>
-      <p class="note">Latest year available, World Bank. Updated weekly.</p></div>` : "")
-      + (a.leader_note ? `<div class="aside-block"><div class="aside-label">Leadership</div><p>${esc(a.leader_note)}</p></div>` : "")
-      + electionText(a.next_election);
-  } else if (a.tags?.length) {
-    facts = `<div class="aside-block"><div class="aside-label">Topics</div><p class="tags">${a.tags.map((t) => `<span class="badge">${esc(t)}</span>`).join(" ")}</p></div>`;
+  // Turn "At a glance" and "Key takeaways" (an H2 followed by a list) into designed panels.
+  for (const [id, cls] of [["at-a-glance", "panel-glance"], ["key-takeaways", "panel-takeaways"]]) {
+    const h = document.getElementById(id);
+    const list = h?.nextElementSibling;
+    if (h && list && /^(UL|OL)$/.test(list.tagName)) {
+      const box = document.createElement("section");
+      box.className = `art-panel ${cls}`;
+      h.replaceWith(box);
+      box.append(h, list);
+    }
   }
-  $("#art-aside").innerHTML = facts + outline;
+  document.querySelectorAll(".panel-glance li > strong:first-child").forEach((b) => { b.textContent = b.textContent.replace(/:\s*$/, ""); if (b.nextSibling?.nodeType === 3) b.nextSibling.textContent = b.nextSibling.textContent.replace(/^\s*:?\s*/, ""); });
+  // Tables: right-align cells that are numeric.
+  document.querySelectorAll("#art-body td").forEach((td) => { if (/^[~≈<>]?\s*[-−$£€]?[\d.,]+\s*(%|bn|trn|m)?$/.test(td.textContent.trim())) td.classList.add("num"); });
+
+  $("#art-toc").innerHTML = a.outline.length ? `<div class="toc-label">In this article</div><ol class="toc-sections">${a.outline.map((o) =>
+    `<li><a href="#${o.id}" data-art-sec="${o.id}">${esc(o.text)}</a></li>`).join("")}</ol>
+    <p class="toc-time">${a.minutes} min read</p>` : "";
+  watchArticleSections();
+
+  const other = s === "explainers" ? "spotlights" : "explainers";
+  const sameDay = state.learning.issues.find((i) => i[s].slug === slug)?.[other];
+  let rail = "";
+  if (s === "spotlights") {
+    rail += factFile(a);
+    if (a.leader_note || a.next_election) {
+      const leader = a.leader_note ? a.leader_note.replace(/\s*\(as of [^)]*\)\s*$/i, "") : "";
+      rail += `<section class="rail-card politics" aria-label="Politics">
+        <header class="rc-head"><span class="rc-title">Politics</span><span class="rc-sub">As of mid-2026</span></header>
+        ${leader ? `<div class="pol-row"><div class="pol-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="8" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <div><div class="pol-k">In power</div><div class="pol-v">${esc(leader)}</div></div></div>` : ""}
+        ${electionCard(a.next_election)}
+      </section>`;
+    }
+  } else {
+    rail += `<section class="rail-card" aria-label="About this article">
+      <header class="rc-head"><span class="rc-title">Topics covered</span><span class="rc-sub">${esc(a.topic || "Economics")}</span></header>
+      ${a.tags?.length ? `<div class="tags">${a.tags.map((t) => `<span class="badge">${esc(t)}</span>`).join("")}</div>` : ""}
+      <p class="rc-foot">Published ${issueDay(a.published)}${state.learning.issues.find((i) => i.explainers.slug === slug) ? ` · Issue ${state.learning.issues.find((i) => i.explainers.slug === slug).number}` : ""}</p>
+    </section>`;
+  }
+  if (sameDay) rail += `<section class="rail-also"><div class="toc-label">Also in today’s issue</div>${learnCard(other, sameDay, false)}</section>`;
+  $("#art-aside").innerHTML = rail;
 
   // Previous / next in the archive (same series).
   const list = state.learning.issues.map((i) => i[s]).filter((x, k, arr) => arr.findIndex((y) => y.slug === x.slug) === k);
   const idx = list.findIndex((x) => x.slug === slug);
   const newer = list[idx - 1], older = list[idx + 1];
-  const other = s === "explainers" ? "spotlights" : "explainers";
-  const sameDay = state.learning.issues.find((i) => i[s].slug === slug)?.[other];
   $("#art-foot").innerHTML = `
-    ${sameDay ? `<div class="also"><div class="aside-label">Also in this issue</div>${learnCard(other, sameDay, false)}</div>` : ""}
     <div class="art-nav">
       ${older ? `<a class="btn ghost" href="#learn/${s}/${older.slug}">← ${esc(older.title)}</a>` : "<span></span>"}
       ${newer ? `<a class="btn ghost" href="#learn/${s}/${newer.slug}">${esc(newer.title)} →</a>` : ""}
@@ -1149,6 +1202,21 @@ async function openArticle(s, slug) {
     <div class="art-actions"><button class="btn" id="copy-link">Copy link</button><a class="btn ghost" href="#learn">All articles</a>
       <a class="btn ghost" href="#learn" data-scroll-sub>Get these by email</a></div>`;
   updateReadBar();
+}
+
+// Highlight the last section heading scrolled past (works for short and long sections alike).
+let artHeads = [], artLinks = [];
+function watchArticleSections() {
+  artLinks = [...document.querySelectorAll("#art-toc a")];
+  artHeads = [...document.querySelectorAll("#art-body h2[id]")];
+  markArticleSection();
+}
+function markArticleSection() {
+  if (!artHeads.length || $("#learn-reader").hidden) return;
+  const line = innerHeight * 0.3;
+  let cur = artHeads[0].id;
+  for (const h of artHeads) { if (h.getBoundingClientRect().top <= line) cur = h.id; else break; }
+  artLinks.forEach((l) => l.classList.toggle("active", l.dataset.artSec === cur));
 }
 
 function updateReadBar() {
@@ -1168,7 +1236,7 @@ function showLearn(rest) {
 }
 
 function wireLearn() {
-  addEventListener("scroll", updateReadBar, { passive: true });
+  addEventListener("scroll", () => { updateReadBar(); markArticleSection(); }, { passive: true });
   document.addEventListener("click", async (e) => {
     const sec = e.target.closest("[data-art-sec]");
     if (sec) { e.preventDefault(); document.getElementById(sec.dataset.artSec)?.scrollIntoView({ behavior: "smooth" }); }

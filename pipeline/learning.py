@@ -157,7 +157,8 @@ def _next_election(iso2: str | None, today: date) -> dict | None:
     if not iso2 or not f.exists():
         return None
     for e in json.loads(f.read_text(encoding="utf-8")).get("elections", []):
-        if e.get("iso") == iso2 and not e.get("territory") and (not e.get("date") or e["date"] >= today.isoformat()):
+        # Skip indirect votes (e.g. a president chosen by parliament): readers want the next popular vote.
+        if e.get("iso") == iso2 and not e.get("territory") and not e.get("indirect") and (not e.get("date") or e["date"] >= today.isoformat()):
             return {k: e.get(k) for k in ("date", "precision", "year", "month", "offices", "kinds")}
     return None
 
