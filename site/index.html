@@ -4,117 +4,223 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Macro Monitor</title>
-  <meta name="description" content="US, UK and euro area economic indicators, upcoming data releases and a worldwide election calendar.">
+  <meta name="description" content="An open research dashboard: US, UK and euro area economic statistics explained, upcoming data releases and a worldwide election calendar.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=dev">
   <script>
     try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
   </script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="wrap topbar-inner">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-name">Macro Monitor</span>
-      </div>
-      <nav class="tabs" role="tablist" aria-label="Views">
-        <button role="tab" data-view="dashboard" aria-selected="true">Dashboard</button>
-        <button role="tab" data-view="compare" aria-selected="false">Compare</button>
-        <button role="tab" data-view="calendar" aria-selected="false">Calendar</button>
-        <button role="tab" data-view="elections" aria-selected="false">Elections</button>
-      </nav>
-      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="masthead">
+    <div class="wrap mast-top">
+      <a class="brand" href="#dashboard" aria-label="Macro Monitor, home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect x="1" y="1" width="30" height="30" rx="7" class="bm-bg"/>
+          <path d="M7 22 L12.5 15 L17 18.5 L25 9" class="bm-line"/>
+          <circle cx="25" cy="9" r="2.4" class="bm-dot"/>
+        </svg>
+        <span class="brand-text">
+          <span class="brand-name">Macro Monitor</span>
+          <span class="brand-tag">Economic statistics &amp; elections, explained</span>
+        </span>
+      </a>
+      <button class="search-trigger" id="search-open" aria-haspopup="dialog" aria-keyshortcuts="/ Control+K">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="st-label">Search statistics, releases, elections…</span>
+        <kbd>/</kbd>
+      </button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark" title="Light / dark">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1Z"/></svg>
       </button>
     </div>
+    <div class="wrap">
+      <nav class="tabs" role="tablist" aria-label="Sections of the site">
+        <button role="tab" data-view="dashboard" aria-selected="true">Overview</button>
+        <button role="tab" data-view="compare" aria-selected="false">Compare</button>
+        <button role="tab" data-view="calendar" aria-selected="false">Release calendar</button>
+        <button role="tab" data-view="elections" aria-selected="false">Elections</button>
+        <button role="tab" data-view="about" aria-selected="false">About &amp; sources</button>
+      </nav>
+    </div>
   </header>
 
-  <main class="wrap">
+  <main id="main" tabindex="-1">
+    <!-- ======================================================= overview -->
     <section id="view-dashboard" class="view" aria-labelledby="dash-title">
-      <div class="view-head">
-        <div>
-          <h1 id="dash-title">Economic dashboard</h1>
-          <p class="sub" id="updated"></p>
+      <div class="dash-grid">
+        <nav class="toc" aria-label="Economy and sections">
+          <div class="toc-block">
+            <div class="toc-label" id="cp-label">Economy</div>
+            <div class="country-list" id="country-picker" role="radiogroup" aria-labelledby="cp-label"></div>
+          </div>
+          <div class="toc-block toc-sections-block">
+            <div class="toc-label">On this page</div>
+            <ol class="toc-sections" id="toc-sections"></ol>
+          </div>
+        </nav>
+
+        <div class="dash-main">
+          <header class="page-head">
+            <p class="kicker" id="dash-kicker">Overview</p>
+            <h1 id="dash-title">At a glance</h1>
+            <p class="lede" id="dash-lede"></p>
+            <p class="meta" id="updated"></p>
+          </header>
+          <div id="glance" class="glance"></div>
+          <div id="dashboard"></div>
         </div>
-        <div class="seg" id="country-picker" role="radiogroup" aria-label="Country"></div>
-      </div>
-      <div class="dash-layout">
+
         <aside class="side" aria-labelledby="side-title">
-          <div class="side-head"><h2 id="side-title">Next up</h2><a href="#calendar" class="side-more" data-goto-cal>Full calendar</a></div>
+          <div class="side-head">
+            <h2 id="side-title">Upcoming releases</h2>
+            <a href="#calendar" class="side-more" data-goto-cal>Full calendar →</a>
+          </div>
+          <p class="side-hint">Click a release for an explainer and the latest figures.</p>
           <div id="next-up" class="side-list"></div>
         </aside>
-        <div id="dashboard"></div>
       </div>
     </section>
 
-    <section id="view-compare" class="view" hidden aria-labelledby="cmp-title">
-      <div class="view-head">
+    <!-- ======================================================= compare -->
+    <section id="view-compare" class="view wrap" hidden aria-labelledby="cmp-title">
+      <header class="page-head row">
         <div>
-          <h1 id="cmp-title">Compare</h1>
-          <p class="sub">Your charts are saved in this browser. Hover a chart for values.</p>
+          <p class="kicker">Compare</p>
+          <h1 id="cmp-title">Compare economies side by side</h1>
+          <p class="lede">Each figure puts one statistic for several economies on a common axis. Add your own with the chart builder: pick a statistic, the economies and a frequency. Your figures are saved in this browser.</p>
         </div>
         <div class="filters">
           <button class="btn ghost" id="cmp-reset" title="Replace your charts with the default set">Reset to defaults</button>
-          <button class="btn primary" id="cmp-add">+ Add chart</button>
+          <button class="btn primary" id="cmp-add">
+            <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            Add a chart
+          </button>
         </div>
-      </div>
+      </header>
       <div id="compare" class="compare-grid"></div>
     </section>
 
-    <section id="view-calendar" class="view" hidden aria-labelledby="cal-title">
-      <div class="view-head">
-        <div>
-          <h1 id="cal-title">Release calendar</h1>
-          <p class="sub" id="cal-sub">Times shown in your local time zone.</p>
-        </div>
-        <div class="filters">
-          <div class="seg" id="cal-country" role="radiogroup" aria-label="Country filter"></div>
-          <div class="seg" id="cal-importance" role="radiogroup" aria-label="Importance filter"></div>
-          <button class="btn" id="ics-export" title="Download the filtered events as an .ics file for Outlook, Google or Apple Calendar">Add to calendar</button>
-        </div>
+    <!-- ======================================================= calendar -->
+    <section id="view-calendar" class="view wrap" hidden aria-labelledby="cal-title">
+      <header class="page-head">
+        <p class="kicker">Release calendar</p>
+        <h1 id="cal-title">When the next figures come out</h1>
+        <p class="lede" id="cal-sub">Times shown in your local time zone.</p>
+      </header>
+      <div class="toolbar">
+        <div class="tool"><span class="tool-label" id="calc-l">Economy</span><div class="seg" id="cal-country" role="radiogroup" aria-labelledby="calc-l"></div></div>
+        <div class="tool"><span class="tool-label" id="cali-l">Importance</span><div class="seg" id="cal-importance" role="radiogroup" aria-labelledby="cali-l"></div></div>
+        <button class="btn" id="ics-export" title="Download the filtered releases as an .ics file for Outlook, Google or Apple Calendar">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Add to my calendar
+        </button>
       </div>
-      <div id="calendar"></div>
+      <div id="calendar" class="agenda"></div>
       <p class="note" id="cal-warnings"></p>
     </section>
 
-    <section id="view-elections" class="view" hidden aria-labelledby="el-title">
-      <div class="view-head">
-        <div>
-          <h1 id="el-title">Election calendar</h1>
-          <p class="sub" id="el-sub">National elections and referendums worldwide.</p>
-        </div>
-        <div class="filters">
-          <div class="seg" id="el-scope" role="radiogroup" aria-label="Countries"></div>
-          <div class="seg" id="el-type" role="radiogroup" aria-label="Election type"></div>
-          <button class="btn" id="el-ics" title="Download the filtered elections with a fixed date as an .ics file">Add to calendar</button>
-        </div>
+    <!-- ======================================================= elections -->
+    <section id="view-elections" class="view wrap" hidden aria-labelledby="el-title">
+      <header class="page-head">
+        <p class="kicker">Elections</p>
+        <h1 id="el-title">Elections around the world</h1>
+        <p class="lede" id="el-sub">National elections and referendums worldwide.</p>
+      </header>
+      <div id="el-next" class="feature-strip"></div>
+      <div class="toolbar">
+        <div class="tool"><span class="tool-label" id="elr-l">Region</span><div class="seg seg-scroll" id="el-region" role="radiogroup" aria-labelledby="elr-l"></div></div>
+        <div class="tool"><span class="tool-label" id="els-l">Countries</span><div class="seg" id="el-scope" role="radiogroup" aria-labelledby="els-l"></div></div>
+        <div class="tool"><span class="tool-label" id="elt-l">Type</span><div class="seg" id="el-type" role="radiogroup" aria-labelledby="elt-l"></div></div>
+        <button class="btn" id="el-ics" title="Download the filtered elections that have a fixed date as an .ics file">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Add to my calendar
+        </button>
       </div>
-      <div class="seg seg-scroll" id="el-region" role="radiogroup" aria-label="Region"></div>
-      <div id="el-next" class="next-up"></div>
-      <div id="elections"></div>
+      <div id="elections" class="agenda"></div>
       <details class="el-recent" id="el-recent-wrap">
         <summary>Recent elections <span class="note" id="el-recent-count"></span></summary>
         <div id="el-recent"></div>
       </details>
       <p class="note" id="el-note"></p>
     </section>
+
+    <!-- ======================================================= about -->
+    <section id="view-about" class="view wrap" hidden aria-labelledby="about-title">
+      <header class="page-head">
+        <p class="kicker">About &amp; sources</p>
+        <h1 id="about-title">About this dashboard</h1>
+        <p class="lede">Macro Monitor collects official statistics for the United States, the United Kingdom and the euro area, explains what each one measures, and shows when the next figures are due. It also tracks national elections worldwide.</p>
+      </header>
+      <div class="prose-grid">
+        <article class="prose">
+          <h2>How to use it</h2>
+          <ul class="howto">
+            <li><strong>Overview</strong>: choose an economy on the left. Each card shows the latest figure, the change since the previous one and a 3-year trend line. Click a card for the full history, a data table and an explainer.</li>
+            <li><strong>Upcoming releases</strong> (right of the Overview): click any release to see what it measures, why it matters and the current figures.</li>
+            <li><strong>Compare</strong>: put the same statistic for several economies on one chart, or build your own.</li>
+            <li><strong>Search</strong>: press <kbd>/</kbd> or <kbd>Ctrl</kbd> <kbd>K</kbd> anywhere to find a statistic, release or election.</li>
+          </ul>
+
+          <h2>Reading the figures</h2>
+          <dl class="glossary">
+            <dt>% y/y</dt><dd>Change on the same period a year earlier. Removes seasonal patterns; the usual way to quote inflation.</dd>
+            <dt>% m/m, % q/q</dt><dd>Change on the previous month or quarter. More timely, but noisier.</dd>
+            <dt>Annualised</dt><dd>A quarterly change scaled up to an annual rate (roughly ×4). US GDP is usually quoted this way, so it looks larger than UK or euro area GDP growth.</dd>
+            <dt>pp</dt><dd>Percentage points: the difference between two percentages (3.5% to 3.9% is +0.4pp).</dd>
+            <dt>Seasonally adjusted</dt><dd>Corrected for regular calendar patterns (Christmas, summer). Where a series isn't, compare with the same period last year; the cards do this automatically.</dd>
+            <dt>Revisions</dt><dd>First estimates are often revised as more data arrives, especially GDP and migration. The charts always show the latest vintage.</dd>
+          </dl>
+
+          <h2>Updates</h2>
+          <p>Data is refreshed automatically on weekdays at 07:30, 15:15 and 22:00 UK time (UTC), shortly after the main UK and US release times. Figures can lag the official release by a few hours. If a source can't be reached, the last good figure is kept and marked <em>Stale</em>.</p>
+
+          <h2>Caveats</h2>
+          <p>This is an independent personal project, not an official statistics service, and nothing here is investment advice. Always check the source before relying on a number. The election calendar comes from volunteer-edited Wikipedia pages, so snap elections appear only once editors add them.</p>
+        </article>
+
+        <aside class="sources">
+          <h2>Sources</h2>
+          <table class="src-table">
+            <thead><tr><th>Source</th><th>Used for</th></tr></thead>
+            <tbody>
+              <tr><td><a href="https://fred.stlouisfed.org/" rel="noopener">FRED</a>, Federal Reserve Bank of St. Louis</td><td>US macro data, rates, public finances; US release dates</td></tr>
+              <tr><td><a href="https://www.bea.gov/" rel="noopener">BEA</a></td><td>US release dates (backup)</td></tr>
+              <tr><td><a href="https://www.cbp.gov/newsroom/stats/nationwide-encounters" rel="noopener">US Customs and Border Protection</a></td><td>Border encounters</td></tr>
+              <tr><td><a href="https://www.ons.gov.uk/" rel="noopener">Office for National Statistics</a></td><td>UK prices, GDP, labour market, public finances, net migration; release dates</td></tr>
+              <tr><td><a href="https://www.bankofengland.co.uk/boeapps/database/" rel="noopener">Bank of England</a></td><td>Bank Rate, gilt yields, sterling</td></tr>
+              <tr><td><a href="https://www.gov.uk/government/organisations/home-office/about/research#statistics" rel="noopener">Home Office</a></td><td>Small boats, asylum, visas</td></tr>
+              <tr><td><a href="https://ec.europa.eu/eurostat" rel="noopener">Eurostat</a></td><td>Euro area prices, GDP, labour, industry, public finances; release dates</td></tr>
+              <tr><td><a href="https://data.ecb.europa.eu/" rel="noopener">European Central Bank</a></td><td>Deposit rate, yield curve, euro</td></tr>
+              <tr><td><a href="https://en.wikipedia.org/wiki/List_of_elections_in_2026" rel="noopener">Wikipedia</a> (CC BY-SA) and <a href="https://www.wikidata.org/" rel="noopener">Wikidata</a></td><td>Election calendar</td></tr>
+            </tbody>
+          </table>
+          <h2>Cite this</h2>
+          <p class="cite" id="cite-text">Macro Monitor (2026). <em>US, UK and euro area economic statistics.</em> https://andrewdr14.github.io/econ-dashboard/</p>
+          <p class="note">Code and data pipeline: <a href="https://github.com/andrewdr14/econ-dashboard" rel="noopener">github.com/andrewdr14/econ-dashboard</a></p>
+        </aside>
+      </div>
+    </section>
   </main>
 
-  <footer class="wrap footer">
-    <p>Data: <a href="https://fred.stlouisfed.org/" rel="noopener">FRED, Federal Reserve Bank of St. Louis</a> ·
-      <a href="https://www.ons.gov.uk/" rel="noopener">Office for National Statistics</a> ·
-      <a href="https://www.bankofengland.co.uk/boeapps/database/" rel="noopener">Bank of England</a> ·
-      <a href="https://www.bea.gov/" rel="noopener">BEA</a> ·
-      <a href="https://ec.europa.eu/eurostat" rel="noopener">Eurostat</a> ·
-      <a href="https://data.ecb.europa.eu/" rel="noopener">ECB</a> ·
-      <a href="https://www.gov.uk/government/organisations/home-office/about/research#statistics" rel="noopener">Home Office</a> ·
-      <a href="https://www.cbp.gov/newsroom/stats/nationwide-encounters" rel="noopener">US CBP</a> ·
-      elections from <a href="https://en.wikipedia.org/wiki/List_of_elections_in_2026" rel="noopener">Wikipedia</a> (CC BY-SA) and <a href="https://www.wikidata.org/" rel="noopener">Wikidata</a>. Refreshed automatically each day; figures may lag official releases by a few hours.</p>
+  <footer class="footer">
+    <div class="wrap foot-inner">
+      <div class="foot-brand">
+        <span class="brand-name">Macro Monitor</span>
+        <span class="note">Official statistics, explained. Refreshed every weekday.</span>
+      </div>
+      <nav class="foot-links" aria-label="Footer">
+        <a href="#dashboard">Overview</a><a href="#compare">Compare</a><a href="#calendar">Release calendar</a><a href="#elections">Elections</a><a href="#about">About &amp; sources</a>
+      </nav>
+      <p class="foot-src">Data from FRED, BEA, US CBP, ONS, the Bank of England, the Home Office, Eurostat and the ECB. Elections from Wikipedia (CC BY-SA) and Wikidata. Not investment advice.</p>
+    </div>
   </footer>
 
+  <!-- ======================================================= dialogs -->
   <dialog id="detail" aria-labelledby="detail-title">
     <div class="detail-head">
       <div>
@@ -126,14 +232,14 @@
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
       </button>
     </div>
+    <div id="detail-about" class="about"></div>
     <div class="detail-controls">
       <div class="seg" id="detail-range" role="radiogroup" aria-label="Time range"></div>
       <button class="btn ghost" id="detail-table-toggle" aria-pressed="false">Show table</button>
     </div>
-    <div id="detail-about" class="about"></div>
     <div id="detail-chart" class="chart chart-lg"></div>
     <div id="detail-table" class="table-wrap" hidden></div>
-    <p class="note" id="detail-source"></p>
+    <p class="note caption" id="detail-source"></p>
   </dialog>
 
   <dialog id="release" aria-labelledby="rel-title">
@@ -153,18 +259,21 @@
   <dialog id="builder" aria-labelledby="b-title" class="builder">
     <form method="dialog" id="builder-form">
       <div class="detail-head">
-        <h2 id="b-title">Add a chart</h2>
+        <div>
+          <p class="eyebrow">Chart builder</p>
+          <h2 id="b-title">Add a chart</h2>
+        </div>
         <button type="button" class="icon-btn" data-close aria-label="Close">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
         </button>
       </div>
       <div class="b-grid">
         <div class="b-controls">
-          <label class="field"><span>Statistic</span><select id="b-stat"></select></label>
-          <fieldset class="field" id="b-areas-wrap"><legend>Areas to compare</legend><div id="b-areas" class="checks"></div></fieldset>
-          <fieldset class="field" id="b-inds-wrap" hidden><legend>Indicators <span class="note">(same type of unit, up to 6)</span></legend><div id="b-inds" class="checks checks-long"></div></fieldset>
+          <label class="field"><span><b class="step">1</b> Statistic</span><select id="b-stat"></select></label>
+          <fieldset class="field" id="b-areas-wrap"><legend><b class="step">2</b> Economies to compare</legend><div id="b-areas" class="checks"></div></fieldset>
+          <fieldset class="field" id="b-inds-wrap" hidden><legend><b class="step">2</b> Indicators <span class="note">(same type of unit, up to 6)</span></legend><div id="b-inds" class="checks checks-long"></div></fieldset>
           <div class="field-row">
-            <label class="field"><span>Frequency</span><select id="b-freq"></select></label>
+            <label class="field"><span><b class="step">3</b> Frequency</span><select id="b-freq"></select></label>
             <label class="field"><span>Combine by</span><select id="b-agg"><option value="avg">Average</option><option value="last">End of period</option><option value="sum">Sum</option></select></label>
             <label class="field"><span>Time range</span><select id="b-range"></select></label>
           </div>
@@ -182,6 +291,17 @@
         <button type="submit" class="btn primary" id="b-save">Add chart</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog id="search" class="search" aria-label="Search">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="search-input" type="search" autocomplete="off" spellcheck="false" placeholder="Try “UK inflation”, “payrolls”, “France election”…"
+        role="combobox" aria-expanded="true" aria-controls="search-results" aria-autocomplete="list">
+      <kbd>Esc</kbd>
+    </div>
+    <div id="search-results" class="search-results" role="listbox" aria-label="Results"></div>
+    <div class="search-foot note"><span><kbd>↑</kbd> <kbd>↓</kbd> to move</span><span><kbd>Enter</kbd> to open</span></div>
   </dialog>
 
   <div id="tooltip" class="tooltip" role="status" aria-live="polite" hidden></div>

@@ -4,7 +4,12 @@ A static economic data dashboard for the US, UK and euro area (inflation, growth
 Data is fetched by a small Python pipeline, saved as JSON, and served by a plain HTML/JS site.
 A scheduled GitHub Actions job refreshes the data and redeploys to GitHub Pages.
 
-- **Dashboard**: latest value, change on the previous period, sparkline and next release date for each indicator. Click a card for the full history (1Y / 5Y / 10Y / Max, hover tooltips, table view) and a plain-English explainer.
+- **Design**: a "research paper" look: warm paper tones, serif headings, figures with numbered captions. Light and dark themes.
+- **Search**: press `/` or `Ctrl K` anywhere to jump to a statistic, upcoming release, election or page.
+- **Overview** (formerly Dashboard): pick an economy on the left; a plain-English summary and four headline figures sit at the top,
+  then sections with a contents list that tracks your scroll, and upcoming releases on the right.
+- **About & sources**: how to read the figures (glossary), update schedule, caveats, sources and a citation.
+- **Dashboard cards**: latest value, change on the previous period, sparkline and next release date for each indicator. Click a card for the full history (1Y / 5Y / 10Y / Max, hover tooltips, table view) and a plain-English explainer.
   A **Next up** sidebar lists the country's upcoming releases; click one for a pop-up with what the statistic measures, why it matters, the latest and previous values, and when it comes out.
 - **Compare**: a graph builder. Add a chart by picking a statistic (GDP growth, CPI, core CPI, unemployment, wages, policy rates, yields, FX,
   industrial production, debt/GDP, irregular arrivals, any single indicator, or a custom mix measured in the same units), the areas to compare,

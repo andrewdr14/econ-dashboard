@@ -48,7 +48,19 @@ function valueHtml(ind, v) {
   return `${fmtNum(v, ind.decimals)}${unit ? `<small>${unit}</small>` : ""}`;
 }
 function deltaText(ind) {
-  if (!ind.latest || !ind.previous) return "";
+  if (!ind.latest) return "";
+  // Policy rates change rarely: say when they last moved rather than "±0 vs yesterday".
+  if (ind.concept === "policy_rate" && ind.spark?.length) {
+    const cur = ind.latest.value;
+    const pts = ind.spark;
+    let i = pts.length - 1;
+    while (i >= 0 && Math.abs(pts[i][1] - cur) < 1e-9) i--;
+    if (i < 0) return `<span class="delta">Unchanged for over a year</span>`;
+    const when = fmtDate(toDate(pts[i + 1][0]), "monthly");
+    const dir = cur > pts[i][1] ? "Raised" : "Cut";
+    return `<span class="delta"><span class="arrow" aria-hidden="true">${cur > pts[i][1] ? "▲" : "▼"}</span> ${dir} from ${fmtNum(pts[i][1], ind.decimals)}% in ${when}</span>`;
+  }
+  if (!ind.previous) return "";
   const d = ind.latest.value - ind.previous.value;
   const dec = ind.decimals;
   const rounded = +d.toFixed(dec);
@@ -102,22 +114,88 @@ function nextReleaseFor(id) {
 }
 
 // ---------------------------------------------------------------- dashboard
+const CAT_DESC = {
+  "Inflation": "How fast consumer prices are rising: the figure central banks target.",
+  "Growth & activity": "How much the economy is producing and how much households and businesses are spending.",
+  "Labour market": "Jobs, unemployment and pay, which drive household incomes and services inflation.",
+  "Rates & markets": "The central bank's policy rate, government borrowing costs and the currency.",
+  "Public finances": "How much the government is borrowing and how large its debt is relative to the economy.",
+  "Migration": "Arrivals, asylum claims, visas and net migration, which shape population and labour supply.",
+};
+const SHORT_NAME = { US: "US", UK: "UK", EA: "euro area" };
+const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const unitSuffix = (ind) => (ind.unit === "%" || ind.unit?.startsWith("% ") ? "%" : "");
+
+// The four headline figures for an economy.
+function glancePicks(country) {
+  const inds = state.summary.indicators.filter((i) => i.country === country && i.latest && !i.hidden);
+  const byConcept = (k) => inds.find((i) => i.concept === k);
+  return [
+    ["Inflation", byConcept("cpi_yoy")],
+    ["GDP growth", inds.find((i) => i.category === "Growth & activity")],
+    ["Unemployment", byConcept("unemployment")],
+    ["Policy rate", byConcept("policy_rate")],
+  ].filter(([, i]) => i);
+}
+
+function overviewLede(country) {
+  const picks = Object.fromEntries(glancePicks(country).map(([k, i]) => [k, i]));
+  const v = (i) => i ? `<strong>${fmtNum(i.latest.value, i.decimals)}${unitSuffix(i)}</strong>` : "";
+  const parts = [];
+  if (picks.Inflation && picks.Unemployment) parts.push(`Inflation is ${v(picks.Inflation)} and unemployment ${v(picks.Unemployment)}.`);
+  if (picks["Policy rate"]) parts.push(`The ${esc(picks["Policy rate"].name.replace(/ \(.*\)$/, ""))} stands at ${v(picks["Policy rate"])}.`);
+  const next = upcoming().find((e) => e.country === country && e.importance === "high");
+  if (next) parts.push(`The next major release is <strong>${esc(next.title)}</strong>, ${relDays(new Date(next.datetime_utc))} (${fmtDay(new Date(next.datetime_utc))}).`);
+  return parts.join(" ");
+}
+
 function renderDashboard() {
   const { summary } = state;
-  const inds = summary.indicators.filter((i) => i.country === state.country && !i.hidden);
-  const html = summary.categories.map((cat) => {
-    const cards = inds.filter((i) => i.category === cat);
-    if (!cards.length) return "";
-    return `<section class="cat"><h3>${cat}</h3><div class="grid">${cards.map(cardHtml).join("")}</div></section>`;
-  }).join("");
-  $("#dashboard").innerHTML = html || `<div class="empty">No indicators configured for this country yet.</div>`;
+  const c = state.country;
+  const cname = summary.countries[c]?.name || c;
+  $("#dash-kicker").innerHTML = `${flag(c)} Overview · ${esc(cname)}`;
+  $("#dash-title").textContent = `The ${SHORT_NAME[c] || cname} economy at a glance`;
+  $("#dash-lede").innerHTML = overviewLede(c);
 
+  $("#glance").innerHTML = glancePicks(c).map(([label, ind]) => `
+    <button class="glance-item" data-id="${ind.id}" aria-label="${esc(label)}: ${fmtNum(ind.latest.value, ind.decimals)} ${esc(ind.unit)}. Open chart">
+      <span class="g-label">${esc(label)}</span>
+      <span class="g-value">${fmtNum(ind.latest.value, ind.decimals)}${unitSuffix(ind) ? "<small>%</small>" : ""}</span>
+      <span class="g-sub">${esc(ind.name)} · ${ind.latest.period}</span>
+      <span class="g-delta">${deltaText(ind)}</span>
+    </button>`).join("");
+
+  const inds = summary.indicators.filter((i) => i.country === c && !i.hidden);
+  const cats = summary.categories.filter((cat) => inds.some((i) => i.category === cat));
+  $("#dashboard").innerHTML = cats.map((cat) => {
+    const cards = inds.filter((i) => i.category === cat);
+    return `<section class="cat" id="sec-${slug(cat)}" aria-labelledby="h-${slug(cat)}">
+      <div class="cat-head"><div><h2 id="h-${slug(cat)}">${esc(cat)}</h2>${CAT_DESC[cat] ? `<p class="cat-desc">${CAT_DESC[cat]}</p>` : ""}</div>
+        <span class="cat-count">${cards.length} ${cards.length === 1 ? "indicator" : "indicators"}</span></div>
+      <div class="grid">${cards.map(cardHtml).join("")}</div></section>`;
+  }).join("") || `<div class="empty">No indicators configured for this economy yet.</div>`;
+  $("#toc-sections").innerHTML = cats.map((cat) => `<li><a href="#sec-${slug(cat)}" data-sec="sec-${slug(cat)}">${esc(cat)}</a></li>`).join("");
+  watchSections();
   renderSidebar();
+}
+
+// Highlight the section currently in view in the contents list.
+let sectionObserver;
+function watchSections() {
+  sectionObserver?.disconnect();
+  const links = [...document.querySelectorAll("#toc-sections a")];
+  const mark = (id) => links.forEach((a) => a.classList.toggle("active", a.dataset.sec === id));
+  if (links[0]) mark(links[0].dataset.sec);
+  sectionObserver = new IntersectionObserver((entries) => {
+    const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+    if (vis) mark(vis.target.id);
+  }, { rootMargin: "-20% 0px -65% 0px" });
+  document.querySelectorAll("#dashboard .cat").forEach((s) => sectionObserver.observe(s));
 }
 
 function renderSidebar() {
   const next = upcoming().filter((e) => e.country === state.country && e.importance !== "low").slice(0, 24);
-  $("#side-title").textContent = `Next up · ${state.country}`;
+  $("#side-title").textContent = `Upcoming in the ${SHORT_NAME[state.country] || state.country}`;
   const days = new Map();
   for (const e of next) {
     const k = dayKey(new Date(e.datetime_utc));
@@ -217,7 +295,7 @@ async function openDetail(id) {
     : "No data";
   $("#detail-about").innerHTML = aboutHtml(ind.about);
   const next = nextReleaseFor(id);
-  $("#detail-source").innerHTML = (ind.note ? `${ind.note}<br>` : "") + `Source: <a href="${ind.url}" target="_blank" rel="noopener">${SOURCE_NAMES[ind.source] || ind.source}${ind.series ? " · " + ind.series : ""}</a>` +
+  $("#detail-source").innerHTML = (ind.note ? `<strong>Note:</strong> ${ind.note}<br>` : "") + `<strong>Source:</strong> <a href="${ind.url}" target="_blank" rel="noopener">${SOURCE_NAMES[ind.source] || ind.source}${ind.series ? " · " + ind.series : ""}</a>` +
     (next ? ` · Next release ${fmtDay(new Date(next.datetime_utc))}, ${fmtTime(new Date(next.datetime_utc))}` : "");
   segmented($("#detail-range"), Object.keys(RANGES).map((k) => [k, k]), state.detail.range, (v) => { state.detail.range = v; drawDetail(); });
   const tbtn = $("#detail-table-toggle");
@@ -375,7 +453,8 @@ async function drawWidget(w, panel) {
   try {
     const d = await widgetData(w);
     panel.querySelector("[data-legend]").innerHTML = legendHtml(d.series, d.decimals);
-    panel.querySelector("[data-note]").textContent = [d.unit, d.note].filter(Boolean).join(" · ");
+    const srcs = [...new Set(d.inds.map((i) => SOURCE_NAMES[i.source] || i.source))].join(", ");
+    panel.querySelector("[data-note]").textContent = [`Units: ${d.unit}`, d.note, `Source: ${srcs}`].filter(Boolean).join(" · ");
     renderChart(host, d.series, { kind: d.kind, decimals: d.decimals, unit: unitFamily(d.unit) === "%" ? "%" : "", tooltip, endLabels: d.endLabels });
   } catch (err) {
     host.innerHTML = `<div class="chart-empty">Couldn't load (${esc(err.message)})</div>`;
@@ -392,17 +471,17 @@ function renderWidgets() {
     box.innerHTML = `<div class="empty">No charts yet. <button class="btn primary" data-add-chart>+ Add chart</button></div>`;
     return;
   }
-  box.innerHTML = state.widgets.map((w) => {
+  box.innerHTML = state.widgets.map((w, n) => {
     const title = widgetTitle(w, resolveWidget(w));
-    return `<div class="panel" data-w="${w.id}">
-      <div class="panel-head"><div class="panel-title">${esc(title)}</div>
+    return `<figure class="panel" data-w="${w.id}" style="margin:0">
+      <div class="panel-head"><div class="panel-title"><span class="fig-no">Figure ${n + 1}</span>${esc(title)}</div>
         <div class="panel-tools">
           <div class="seg seg-sm" data-range role="radiogroup" aria-label="Time range"></div>
           <button class="icon-btn sm" data-edit title="Edit chart" aria-label="Edit ${esc(title)}">${ICON_EDIT}</button>
           <button class="icon-btn sm" data-remove title="Remove chart" aria-label="Remove ${esc(title)}">${ICON_X}</button>
         </div></div>
-      <div class="legend" data-legend></div><div class="chart" data-chart></div><p class="note panel-note" data-note></p>
-    </div>`;
+      <div class="legend" data-legend></div><div class="chart" data-chart></div><figcaption class="note panel-note" data-note></figcaption>
+    </figure>`;
   }).join("");
   for (const w of state.widgets) drawWidget(w, box.querySelector(`[data-w="${w.id}"]`));
 }
@@ -670,7 +749,7 @@ function elRow(e) {
     e.precision === "by" && `<span class="badge" title="Latest date allowed by law; it can be called earlier">Must be held by</span>`,
   ].filter(Boolean).join("");
   const rel = e.date && e.precision !== "month" ? relDays(localDay(e.date)) : "";
-  return `<div class="el-row">
+  return `<div class="el-row" id="el-${e.id}">
     <div class="el-when">${elWhen(e)}</div>
     <div class="el-flag">${elTag(e)}</div>
     <div class="el-main"><div class="el-title">${esc(e.country)}<span class="el-badges">${badges}</span></div>
@@ -704,7 +783,7 @@ function renderElections() {
   $("#el-recent-count").textContent = `${recent.length} in the last 60 days · results are on each linked article`;
 
   const next = (state.elections.elections || []).filter((e) => (e.g20 || e.eu) && !e.indirect && e.precision === "day" && !elIsPast(e, today)).slice(0, 6);
-  $("#el-next").innerHTML = next.length ? `<span class="next-label">Next G20 / EU</span>` + next.map((e) =>
+  $("#el-next").innerHTML = next.length ? `<div class="feature-label">Next votes in G20 and EU countries</div>` + next.map((e) =>
     `<a class="next-item" href="${esc(e.offices[0].url)}" target="_blank" rel="noopener">
       <div class="when">${localDay(e.date).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })} · ${relDays(localDay(e.date))}</div>
       <div class="what">${elTag(e)} ${esc(e.country)}</div>
@@ -748,16 +827,194 @@ function initElectionFilters() {
     (v) => { state.elType = v; store.set("elType", v); renderElections(); });
 }
 
+// ---------------------------------------------------------------- search (/ or Ctrl+K)
+const ALIASES = {
+  US: "us usa united states america american fed federal reserve",
+  UK: "uk gb britain british united kingdom england boe bank of england",
+  EA: "ea euro area eurozone europe european ecb",
+};
+const search = { items: [], results: [], sel: 0 };
+
+function buildSearchIndex() {
+  const { summary } = state;
+  const items = [];
+  const pages = [
+    ["dashboard", "Overview", "Headline figures for each economy"],
+    ["compare", "Compare", "Charts comparing economies; build your own"],
+    ["calendar", "Release calendar", "When the next figures come out"],
+    ["elections", "Elections", "National elections worldwide"],
+    ["about", "About & sources", "How to read the figures, sources, methods"],
+  ];
+  for (const [view, title, sub] of pages) {
+    items.push({ group: "Pages", title, sub, icon: "→", keys: `${title} ${sub} page`, run: () => showView(view) });
+  }
+  items.push({ group: "Pages", title: "Add a chart", sub: "Open the chart builder", icon: "+", keys: "add chart builder graph new compare plot",
+    run: () => { showView("compare"); openBuilder(); } });
+  for (const [c, v] of Object.entries(summary.countries)) {
+    items.push({ group: "Pages", title: `${v.name} overview`, sub: "Headline figures, all indicators", icon: flag(c),
+      keys: `${v.name} ${ALIASES[c] || c} economy overview dashboard`,
+      run: () => { state.country = c; store.set("country", c); segmented($("#country-picker"), Object.entries(summary.countries).map(([k, x]) => [k, `${flag(k)} ${esc(x.name)}`]), c, (val) => { state.country = val; store.set("country", val); renderDashboard(); }); renderDashboard(); showView("dashboard"); } });
+  }
+  for (const ind of summary.indicators) {
+    if (ind.hidden || !ind.latest) continue;
+    const cname = summary.countries[ind.country]?.name || ind.country;
+    items.push({
+      group: "Statistics", title: ind.name, sub: `${cname} · ${ind.category} · ${ind.latest.period}`, icon: flag(ind.country),
+      val: `${fmtNum(ind.latest.value, ind.decimals)}${unitSuffix(ind)}`,
+      keys: `${ind.name} ${cname} ${ALIASES[ind.country] || ""} ${ind.category} ${ind.unit} ${state.summary.concepts[ind.concept] || ""}`,
+      more: ind.about ? `${ind.about.what} ${ind.about.why}` : "",
+      run: () => openDetail(ind.id),
+    });
+  }
+  for (const e of upcoming().slice(0, 80)) {
+    const d = new Date(e.datetime_utc);
+    items.push({
+      group: "Upcoming releases", title: e.title, sub: `${summary.countries[e.country]?.name || e.country} · ${fmtDay(d)}${e.time_known ? `, ${fmtTime(d)}` : ""}`,
+      icon: flag(e.country), keys: `${e.title} ${e.detail} ${ALIASES[e.country] || e.country} release ${fmtDay(d)}`,
+      run: () => openRelease(e.id),
+    });
+  }
+  const today = todayIso();
+  for (const e of state.elections?.elections || []) {
+    if (elIsPast(e, today)) continue;
+    const when = e.precision === "day" ? localDay(e.date).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })
+      : e.precision === "month" ? `${MONTH_NAMES[e.month - 1]} ${e.year}` : `${e.year}, date not set`;
+    items.push({
+      group: "Elections", title: `${e.country}`, sub: `${e.offices.map((o) => o.label).join(", ")} · ${when}`, icon: elTag(e),
+      keys: `${e.country} ${e.iso || ""} election vote ${e.kinds.join(" ")} ${e.offices.map((o) => o.label).join(" ")} ${e.region}`,
+      run: () => {
+        state.elRegion = "ALL"; state.elScope = "all"; state.elType = "all";
+        initElectionFilters(); renderElections(); showView("elections");
+        const row = document.getElementById(`el-${e.id}`);
+        if (row) { row.scrollIntoView({ block: "center" }); row.classList.add("flash"); setTimeout(() => row.classList.remove("flash"), 1800); }
+      },
+    });
+  }
+  search.items = items.map((it) => ({ ...it, hay: `${it.title} ${it.keys}`.toLowerCase(), titleL: it.title.toLowerCase(), moreL: (it.more || "").toLowerCase() }));
+}
+
+function runSearch(q) {
+  const query = q.trim().toLowerCase();
+  const LIMITS = { Pages: 4, Statistics: 8, "Upcoming releases": 5, Elections: 5 };
+  let scored;
+  if (!query) {
+    // Suggestions: this economy's headline figures, the next releases, the pages.
+    const head = new Set(glancePicks(state.country).map(([, i]) => i.name));
+    scored = search.items.filter((it) =>
+      (it.group === "Statistics" && head.has(it.title) && it.icon.includes(`>${state.country}<`)) ||
+      it.group === "Upcoming releases" || (it.group === "Pages" && it.icon === "→")).map((it) => ({ it, score: 1 }));
+  } else {
+    const tokens = query.split(/\s+/).filter(Boolean);
+    scored = [];
+    for (const it of search.items) {
+      let score = 0, ok = true;
+      for (const t of tokens) {
+        const re = new RegExp(`(^|[^a-z0-9])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
+        if (re.test(it.titleL)) score += 10;
+        else if (re.test(it.hay)) score += 4;
+        else if (t.length > 3 && it.moreL.includes(t)) score += 1;
+        else { ok = false; break; }
+      }
+      if (!ok) continue;
+      if (it.titleL.startsWith(query)) score += 20;
+      if (it.titleL === query) score += 20;
+      scored.push({ it, score });
+    }
+  }
+  const order = ["Statistics", "Upcoming releases", "Elections", "Pages"];
+  const out = [];
+  for (const g of order) {
+    const inG = scored.filter((x) => x.it.group === g).sort((a, b) => b.score - a.score).slice(0, LIMITS[g]);
+    out.push(...inG.map((x) => x.it));
+  }
+  // If the best match overall is a page or election, lead with that group.
+  if (query && scored.length) {
+    const best = scored.slice().sort((a, b) => b.score - a.score)[0].it.group;
+    out.sort((a, b) => (b.group === best) - (a.group === best));
+  }
+  search.results = out;
+  search.sel = 0;
+  drawSearch(query);
+}
+
+function drawSearch(query) {
+  const box = $("#search-results");
+  if (!search.results.length) {
+    box.innerHTML = `<div class="search-empty">No matches for “${esc(query)}”. Try a statistic (“inflation”), a country (“UK”) or an election (“France”).</div>`;
+    $("#search-input").removeAttribute("aria-activedescendant");
+    return;
+  }
+  let html = "", group = "";
+  search.results.forEach((it, i) => {
+    if (it.group !== group) { group = it.group; html += `<div class="sr-group" role="presentation">${!query && group === "Statistics" ? "Headline figures" : group}</div>`; }
+    html += `<button class="sr-item" id="sr-${i}" role="option" data-i="${i}" aria-selected="${i === search.sel}">
+      <span class="sr-icon">${it.icon}</span>
+      <span style="min-width:0"><div class="sr-title">${esc(it.title)}</div><div class="sr-sub">${esc(it.sub)}</div></span>
+      <span class="sr-val">${it.val || ""}</span></button>`;
+  });
+  box.innerHTML = html;
+  $("#search-input").setAttribute("aria-activedescendant", `sr-${search.sel}`);
+}
+
+function moveSel(d) {
+  if (!search.results.length) return;
+  search.sel = (search.sel + d + search.results.length) % search.results.length;
+  document.querySelectorAll(".sr-item").forEach((b) => b.setAttribute("aria-selected", +b.dataset.i === search.sel));
+  document.getElementById(`sr-${search.sel}`)?.scrollIntoView({ block: "nearest" });
+  $("#search-input").setAttribute("aria-activedescendant", `sr-${search.sel}`);
+}
+
+function pickResult(i) {
+  const it = search.results[i];
+  if (!it) return;
+  $("#search").close();
+  setTimeout(() => it.run(), 0);
+}
+
+function openSearch() {
+  buildSearchIndex();
+  const dlg = $("#search");
+  const input = $("#search-input");
+  input.value = "";
+  if (!dlg.open) dlg.showModal();
+  runSearch("");
+  input.focus();
+}
+
+function wireSearch() {
+  $("#search-open").onclick = openSearch;
+  const input = $("#search-input");
+  input.addEventListener("input", () => runSearch(input.value));
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); moveSel(1); }
+    if (e.key === "ArrowUp") { e.preventDefault(); moveSel(-1); }
+    if (e.key === "Enter") { e.preventDefault(); pickResult(search.sel); }
+  });
+  $("#search-results").addEventListener("click", (e) => { const b = e.target.closest(".sr-item"); if (b) pickResult(+b.dataset.i); });
+  $("#search-results").addEventListener("mousemove", (e) => {
+    const b = e.target.closest(".sr-item");
+    if (b && +b.dataset.i !== search.sel) { search.sel = +b.dataset.i; document.querySelectorAll(".sr-item").forEach((x) => x.setAttribute("aria-selected", x === b)); }
+  });
+  document.addEventListener("keydown", (e) => {
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
+    if ((e.key === "k" && (e.ctrlKey || e.metaKey)) || (e.key === "/" && !typing && !document.querySelector("dialog[open]"))) {
+      e.preventDefault();
+      openSearch();
+    }
+  });
+}
+
 // ---------------------------------------------------------------- views & wiring
 let compareDrawn = false;
 function showView(view) {
-  if (!["dashboard", "compare", "calendar", "elections"].includes(view)) view = "dashboard";
+  if (!["dashboard", "compare", "calendar", "elections", "about"].includes(view)) view = "dashboard";
+  const changed = document.querySelector(`#view-${view}`)?.hidden;
   document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.view === view));
   document.querySelectorAll(".view").forEach((v) => (v.hidden = v.id !== `view-${view}`));
   if (view === "compare" && !compareDrawn) { compareDrawn = true; renderWidgets(); }
   if (location.hash.slice(1) !== view) history.replaceState(null, "", `#${view}`);
   tooltip.hidden = true;
-  document.body.classList.toggle("dash-active", view === "dashboard");
+  if (changed) window.scrollTo(0, 0);
 }
 
 function wire() {
@@ -766,6 +1023,8 @@ function wire() {
   document.addEventListener("click", (e) => {
     const card = e.target.closest("[data-id]");
     if (card) openDetail(card.dataset.id);
+    const sec = e.target.closest("[data-sec]");
+    if (sec) { e.preventDefault(); document.getElementById(sec.dataset.sec)?.scrollIntoView({ behavior: "smooth" }); }
     const rel = e.target.closest("[data-release]");
     if (rel) openRelease(rel.dataset.release);
     const oc = e.target.closest("[data-open-chart]");
@@ -782,6 +1041,7 @@ function wire() {
     dlg.addEventListener("close", () => { tooltip.hidden = true; document.body.append(tooltip); });
   }
   wireBuilder();
+  wireSearch();
   $("#detail-table-toggle").onclick = (e) => {
     const on = e.currentTarget.getAttribute("aria-pressed") !== "true";
     e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Hide table" : "Show table";
@@ -826,10 +1086,10 @@ async function init() {
   if (!state.summary.countries[state.country]) state.country = Object.keys(state.summary.countries)[0];
 
   const gen = new Date(state.summary.generated_at);
-  $("#updated").textContent = `Data refreshed ${gen.toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}`;
+  $("#updated").textContent = `Figures last refreshed ${gen.toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}`;
 
-  segmented($("#country-picker"), Object.entries(state.summary.countries).map(([c, v]) => [c, v.name]), state.country,
-    (v) => { state.country = v; store.set("country", v); renderDashboard(); });
+  segmented($("#country-picker"), Object.entries(state.summary.countries).map(([c, v]) => [c, `${flag(c)} ${esc(v.name)}`]), state.country,
+    (v) => { state.country = v; store.set("country", v); renderDashboard(); window.scrollTo({ top: 0, behavior: "smooth" }); });
   initCalendarFilters();
 
   initElectionFilters();
