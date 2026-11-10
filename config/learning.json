@@ -4,7 +4,7 @@
   "timezone": "Europe/London",
   "publish_hour": 6,
   "site_url": "https://andrewdr14.github.io/econ-dashboard/",
-  "buttondown_username": "",
+  "buttondown_username": "andrewdr14",
   "worldbank_refresh_days": 7,
   "worldbank_indicators": [
     {"code": "NY.GDP.MKTP.CD", "label": "GDP", "format": "usd_bn"},
