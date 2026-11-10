@@ -156,6 +156,9 @@ async function openDetail(id) {
   const tbtn = $("#detail-table-toggle");
   tbtn.setAttribute("aria-pressed", "false"); tbtn.textContent = "Show table";
   $("#detail-table").hidden = true;
+  // A modal dialog sits in the browser's top layer, above everything else on the page,
+  // so the hover tooltip has to live inside it while it's open.
+  dlg.append(tooltip);
   if (!dlg.open) dlg.showModal();
   $("#detail-chart").innerHTML = `<div class="chart-empty">Loading…</div>`;
   await drawDetail();
@@ -416,7 +419,7 @@ function wire() {
   });
   $("#detail-close").onclick = () => $("#detail").close();
   $("#detail").addEventListener("click", (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
-  $("#detail").addEventListener("close", () => (tooltip.hidden = true));
+  $("#detail").addEventListener("close", () => { tooltip.hidden = true; document.body.append(tooltip); });
   $("#detail-table-toggle").onclick = (e) => {
     const on = e.currentTarget.getAttribute("aria-pressed") !== "true";
     e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Hide table" : "Show table";
