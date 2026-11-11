@@ -1,4 +1,283 @@
 {
+"ARG": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 683097891618.597,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 14898.0885943842,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 4.36733330217022,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 219.883929014578,
+"year": "2024"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 7.145,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 45851378,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 15.5556611218587,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 14.8089725633333,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -1.14011851807954,
+"year": "2025"
+}
+]
+},
+"AUS": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 1798518933689.21,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 65129.7227990563,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 1.35039785076631,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 2.87403791660173,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 4.09,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 27614411,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 23.2444383508997,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 22.6570110371129,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -2.76564744083184,
+"year": "2025"
+},
+{
+"code": "GC.DOD.TOTL.GD.ZS",
+"format": "pct_gdp",
+"label": "Central govt debt",
+"value": 57.8834285733848,
+"year": "2022"
+}
+]
+},
+"BRA": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 2279920092492.13,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 10713.2856869511,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 2.2857464902475,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 5.01675279604836,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 5.97,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 212812405,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 17.8207228961707,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -2.92630139201733,
+"year": "2025"
+},
+{
+"code": "GC.DOD.TOTL.GD.ZS",
+"format": "pct_gdp",
+"label": "Central govt debt",
+"value": 81.8554431191023,
+"year": "2024"
+}
+]
+},
+"CHN": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 19498039388042.6,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 13861.970224368,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 4.95994886240992,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 0.0595646916565402,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 4.615,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 1406585000,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 21.0711983566772,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 16.8851895085539,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": 3.76972243689338,
+"year": "2025"
+}
+]
+},
 "DEU": {
 "fetched": "2026-11-10",
 "values": [
@@ -64,6 +343,618 @@
 "label": "Current account",
 "value": 4.44736378284623,
 "year": "2025"
+}
+]
+},
+"IDN": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 1445642584163.81,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 5059.62596411213,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 5.10808904438025,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 1.91333443295079,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 3.237,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 285721236,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 22.8465482987858,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 20.5446587523346,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -0.0866434374916221,
+"year": "2025"
+}
+]
+},
+"IND": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 3956067115771.63,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 2702.47987141553,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 7.56666179284244,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 2.39884954182294,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 4.219,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 1463865525,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 22.2630410669804,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 24.0051596190103,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -0.511308076227287,
+"year": "2025"
+}
+]
+},
+"JPN": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 4435162999976.94,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 35951.0449549304,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 1.19311288444599,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 3.17253034260247,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 2.451,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 123366734,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 21.9799093698461,
+"year": "2024"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 22.8730294879112,
+"year": "2024"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": 4.86496093471918,
+"year": "2025"
+}
+]
+},
+"KOR": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 1872374961553.15,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 36226.9663637512,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 1.00701840291242,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 2.12309421458659,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 2.683,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 51684564,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 45.7630385215931,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 40.5985621226499,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": 6.57207036660681,
+"year": "2025"
+},
+{
+"code": "GC.DOD.TOTL.GD.ZS",
+"format": "pct_gdp",
+"label": "Central govt debt",
+"value": 47.8141426119509,
+"year": "2024"
+}
+]
+},
+"MEX": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 1832641364775.52,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 13889.2339628708,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 0.561683456144578,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 3.80957950037393,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 2.673,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 131946900,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 39.6453397926899,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 40.2786127888756,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -0.510910143793841,
+"year": "2025"
+}
+]
+},
+"NGA": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 290794361542.112,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 1224.25410237743,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 4.01336180700973,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 23.0101235833333,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 3.064,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 237527782,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": 4.82784315736378,
+"year": "2025"
+}
+]
+},
+"NOR": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 530755719438.879,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 94594.1929573987,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 1.08528185031417,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 3.03967027305512,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 4.637,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 5610870,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 45.3729560131418,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 33.6798759181448,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": 14.0921638758347,
+"year": "2025"
+}
+]
+},
+"SAU": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 1276942933333.33,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 34536.6555456551,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 4.50246560191663,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 2.03559944812264,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 3.038,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 36973555,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 29.7448740074211,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 28.1733498505598,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -2.56365940191401,
+"year": "2025"
+}
+]
+},
+"TUR": {
+"fetched": "2026-11-11",
+"values": [
+{
+"code": "NY.GDP.MKTP.CD",
+"format": "usd_bn",
+"label": "GDP",
+"value": 1597293229287,
+"year": "2025"
+},
+{
+"code": "NY.GDP.PCAP.CD",
+"format": "usd",
+"label": "GDP per person",
+"value": 18599.4420922378,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 3.60462514082589,
+"year": "2025"
+},
+{
+"code": "FP.CPI.TOTL.ZG",
+"format": "pct",
+"label": "Inflation (CPI)",
+"value": 34.8811700293777,
+"year": "2025"
+},
+{
+"code": "SL.UEM.TOTL.ZS",
+"format": "pct",
+"label": "Unemployment",
+"value": 8.52,
+"year": "2025"
+},
+{
+"code": "SP.POP.TOTL",
+"format": "people_m",
+"label": "Population",
+"value": 85878556,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 24.8497719904256,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 25.0849063722672,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -1.89933817058389,
+"year": "2025"
+},
+{
+"code": "GC.DOD.TOTL.GD.ZS",
+"format": "pct_gdp",
+"label": "Central govt debt",
+"value": 25.5128667788107,
+"year": "2024"
 }
 ]
 }

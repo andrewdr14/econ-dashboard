@@ -2,8 +2,13 @@ name: Update data & deploy
 
 on:
   schedule:
-    # Every day 06:00 UTC (06:00 GMT / 07:00 BST): publish the Learning Centre issue and email it.
-    - cron: "0 6 * * *"
+    # Learning Centre issue + email. GitHub's timed runs are best-effort and often late or
+    # skipped (especially on the hour), so there are several morning attempts; the email is
+    # only ever sent once per issue, and the page itself switches issue at 06:00 UK time.
+    - cron: "7 5 * * *"
+    - cron: "11 6 * * *"
+    - cron: "41 6 * * *"
+    - cron: "23 8 * * *"
     # Weekdays, UTC: after UK 07:00 releases, after US 08:30/10:00 ET releases, and end of day.
     - cron: "30 7 * * 1-5"
     - cron: "15 15 * * 1-5"

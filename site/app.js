@@ -1049,7 +1049,17 @@ function learnCard(s, a, big) {
   </a>`;
 }
 
+// Bring forward any scheduled issue whose release time has passed, so the page
+// moves to the new issue at 06:00 UK time even if the overnight build hasn't run.
+function releaseDueIssues() {
+  const L = state.learning;
+  if (!L?.upcoming) return;
+  while (L.upcoming.length && Date.parse(L.upcoming[0].release) <= Date.now()) L.issues.unshift(L.upcoming.shift());
+  L.issue_number = L.issues[0].number;
+}
+
 function renderLearnHome() {
+  releaseDueIssues();
   const L = state.learning;
   if (!L) { $("#learn-today").innerHTML = `<div class="empty">The Learning Centre isn't available yet.</div>`; return; }
   const today = L.issues[0];
@@ -1142,6 +1152,7 @@ async function openArticle(s, slug) {
   $("#art-kicker").innerHTML = `<span class="series-pill ${s}">${LEARN_LABEL[s]}</span><span class="kick-tag">${artTag(s, a)}</span>`;
   $("#art-title").textContent = a.title;
   $("#art-dek").textContent = a.dek;
+  a.published = state.learning.issues.find((i) => i[s].slug === slug)?.date || a.published;
   $("#art-meta").innerHTML = `<span>${issueDay(a.published)}</span><span>${a.minutes} min read</span><span>${a.words.toLocaleString("en-GB")} words</span>`;
   $("#art-body").innerHTML = a.html;
   document.title = `${a.title} · Macro Monitor`;
@@ -1228,6 +1239,7 @@ function updateReadBar() {
 }
 
 function showLearn(rest) {
+  releaseDueIssues();
   if (rest.length >= 2 && LEARN_LABEL[rest[0]]) return openArticle(rest[0], rest[1]);
   $("#learn-reader").hidden = true;
   $("#learn-home").hidden = false;
@@ -1336,6 +1348,7 @@ async function init() {
     state.calendar = cal;
     state.elections = els;
     state.learning = learn;
+    releaseDueIssues();
   } catch (err) {
     $("#dashboard").innerHTML = `<div class="empty">Couldn't load data. Run <code>python -m pipeline.build</code> first. (${err.message})</div>`;
     return;

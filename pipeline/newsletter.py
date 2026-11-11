@@ -4,7 +4,7 @@
     python -m pipeline.newsletter --dry-run  # print the email instead
 
 Needs BUTTONDOWN_API_KEY (a GitHub secret in CI). Does nothing without it, before
-the morning send window (publish_hour to +5h, UK time), or if today's issue was already sent (data_cache/newsletter.json).
+the send window (publish_hour to 18:00, UK time), or if today's issue was already sent (data_cache/newsletter.json).
 """
 from __future__ import annotations
 
@@ -83,8 +83,8 @@ def main(argv=None) -> int:
         return 0
     local = datetime.now(timezone.utc).astimezone(ZoneInfo(cfg.get("timezone", "Europe/London")))
     hour = int(cfg.get("publish_hour", 6))
-    # Only send in the morning window, so a push later in the day doesn't send a late email.
-    if local.date().isoformat() != issue or not (hour <= local.hour < hour + 5):
+    # Only send on the issue's own day, before 18:00, so a late evening run doesn't send a stale email.
+    if local.date().isoformat() != issue or not (hour <= local.hour < 18):
         print(f"newsletter: outside the morning window for issue {issue} ({local:%Y-%m-%d %H:%M}); skipping")
         return 0
     state = _load(STATE) if STATE.exists() else {}

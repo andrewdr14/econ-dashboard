@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: GDP: what it counts and what it misses</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/what-gdp-counts</link>
+    <guid isPermaLink="false">explainers-what-gdp-counts-2026-11-11</guid>
+    <pubDate>Wed, 11 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Gross domestic product is the most quoted number in economics. It is brilliant at what it was built to do, and silent on much of what makes life worth living.</description>
+  </item>
+  <item>
+    <title>Country Spotlight: Japan: the economy that lived the future first</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/japan</link>
+    <guid isPermaLink="false">spotlights-japan-2026-11-11</guid>
+    <pubDate>Wed, 11 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Deflation, a shrinking population and enormous public debt were once seen as Japan&#x27;s peculiar problems. Increasingly, they look like a preview of what other rich countries face.</description>
+  </item>
+  <item>
     <title>The Explainer: How inflation is measured</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/how-inflation-is-measured</link>
     <guid isPermaLink="false">explainers-how-inflation-is-measured-2026-11-10</guid>

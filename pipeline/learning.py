@@ -185,12 +185,17 @@ def build(cfg: dict, now: datetime | None = None) -> dict:
     if not all(files.values()):
         raise RuntimeError("no articles in content/learning/")
     parsed: dict[str, dict] = {}
-    issues = []
-    # Archive: every past issue, but each article at most once (its most recent appearance).
+    issues, upcoming = [], []
+    tz = ZoneInfo(cfg.get("timezone", "Europe/London"))
+    hour = int(cfg.get("publish_hour", 6))
+    ahead = int(cfg.get("schedule_days_ahead", 14))
+    # Archive: every past issue (newest first). Upcoming issues are published too, with their
+    # release time, so the page switches to the new issue at publish_hour even if no build runs.
     seen = set()
-    for n in range(n_today, -1, -1):
+    for n in range(n_today + ahead, -1, -1):
         d = start + timedelta(days=n)
-        issue = {"date": d.isoformat(), "number": n + 1}
+        issue = {"date": d.isoformat(), "number": n + 1,
+                 "release": datetime(d.year, d.month, d.day, hour, tzinfo=tz).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
         for s, fl in files.items():
             p = fl[n % len(fl)]
             key = (s, p.name)
@@ -198,15 +203,17 @@ def build(cfg: dict, now: datetime | None = None) -> dict:
                 parsed[key] = parse_article(p)
             a = parsed[key]
             issue[s] = {k: a[k] for k in ("slug", "title", "dek", "topic", "country", "iso2", "minutes")}
-            issue[s]["repeat"] = key in seen
-            seen.add(key)
-        issues.append(issue)
+            if n <= n_today:
+                issue[s]["repeat"] = key in seen
+                seen.add(key)
+        (issues if n <= n_today else upcoming).append(issue)
+    upcoming.reverse()  # soonest first
 
     # Write each published article (with live data for spotlights).
     art_dir = OUT / "learning"
     for (s, _), a in parsed.items():
-        first_date = next(i["date"] for i in reversed(issues) if i[s]["slug"] == a["slug"])
-        last_date = next(i["date"] for i in issues if i[s]["slug"] == a["slug"])
+        dates = [i["date"] for i in issues if i[s]["slug"] == a["slug"]] or [next(i["date"] for i in upcoming if i[s]["slug"] == a["slug"])]
+        first_date, last_date = dates[-1], dates[0]
         doc = {**a, "series": s, "series_name": SERIES[s], "published": last_date, "first_published": first_date}
         if s == "spotlights" and a.get("iso3"):
             doc["data"] = _worldbank(a["iso3"], cfg["worldbank_indicators"], int(cfg.get("worldbank_refresh_days", 7)))
@@ -222,6 +229,7 @@ def build(cfg: dict, now: datetime | None = None) -> dict:
         "library": {s: len(f) for s, f in files.items()},
         "series": SERIES,
         "issues": issues,
+        "upcoming": upcoming,
     }
     (OUT / "learning.json").write_text(json.dumps(summary, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     _write_feed(cfg, issues[:30], parsed)
