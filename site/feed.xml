@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: How central banks set interest rates</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/how-central-banks-set-rates</link>
+    <guid isPermaLink="false">explainers-how-central-banks-set-rates-2026-11-12</guid>
+    <pubDate>Thu, 12 Nov 2026 06:00:00 +0000</pubDate>
+    <description>A committee meets, a number changes by a quarter of a percentage point, and the effects ripple through the economy for up to two years. Here is how that works, and why it is so slow.</description>
+  </item>
+  <item>
+    <title>Country Spotlight: India: a services giant searching for factory jobs</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/india</link>
+    <guid isPermaLink="false">spotlights-india-2026-11-12</guid>
+    <pubDate>Thu, 12 Nov 2026 06:00:00 +0000</pubDate>
+    <description>The world&#x27;s most populous country is also its fastest-growing large economy. The question is whether that growth can create enough good jobs for hundreds of millions of young people.</description>
+  </item>
+  <item>
     <title>The Explainer: GDP: what it counts and what it misses</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/what-gdp-counts</link>
     <guid isPermaLink="false">explainers-what-gdp-counts-2026-11-11</guid>
