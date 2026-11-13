@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: The yield curve and why inversions worry markets</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/the-yield-curve</link>
+    <guid isPermaLink="false">explainers-the-yield-curve-2026-11-13</guid>
+    <pubDate>Fri, 13 Nov 2026 06:00:00 +0000</pubDate>
+    <description>A simple line linking short-term and long-term interest rates has an uncanny record of warning about recessions. Then came 2022-24, when it sounded the alarm and the US economy kept growing.</description>
+  </item>
+  <item>
+    <title>Country Spotlight: Brazil: the farm to the world with a fragile wallet</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/brazil</link>
+    <guid isPermaLink="false">spotlights-brazil-2026-11-13</guid>
+    <pubDate>Fri, 13 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Brazil feeds much of the planet and sits on vast reserves of oil and iron ore, yet it has struggled for decades with inflation, high interest rates and deep inequality.</description>
+  </item>
+  <item>
     <title>The Explainer: How central banks set interest rates</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/how-central-banks-set-rates</link>
     <guid isPermaLink="false">explainers-how-central-banks-set-rates-2026-11-12</guid>
