@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: Keynesian economics</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/keynesian-economics</link>
+    <guid isPermaLink="false">explainers-keynesian-economics-2026-11-14</guid>
+    <pubDate>Sat, 14 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Born in the wreckage of the Great Depression, John Maynard Keynes&#x27;s ideas about spending, saving and unemployment shaped the post-war world, fell from favour, and came roaring back in 2008 and 2020.</description>
+  </item>
+  <item>
+    <title>Country Spotlight: Saudi Arabia: an oil kingdom racing to reinvent itself</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/saudi-arabia</link>
+    <guid isPermaLink="false">spotlights-saudi-arabia-2026-11-14</guid>
+    <pubDate>Sat, 14 Nov 2026 06:00:00 +0000</pubDate>
+    <description>The world&#x27;s most important oil exporter is spending heavily to build an economy that can thrive after oil. The ambition is huge; so are the risks.</description>
+  </item>
+  <item>
     <title>The Explainer: The yield curve and why inversions worry markets</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/the-yield-curve</link>
     <guid isPermaLink="false">explainers-the-yield-curve-2026-11-13</guid>
