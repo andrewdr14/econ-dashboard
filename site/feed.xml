@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: Neoliberalism: ideas, history and critiques</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/neoliberalism</link>
+    <guid isPermaLink="false">explainers-neoliberalism-2026-11-16</guid>
+    <pubDate>Mon, 16 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Few words in economics carry so much baggage. What did the thinkers behind neoliberalism actually argue, what happened when governments tried it, and why is the label itself so fiercely disputed?</description>
+  </item>
+  <item>
+    <title>Country Spotlight: South Korea: the miracle economy and its demographic cliff</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/south-korea</link>
+    <guid isPermaLink="false">spotlights-south-korea-2026-11-16</guid>
+    <pubDate>Mon, 16 Nov 2026 06:00:00 +0000</pubDate>
+    <description>In two generations, South Korea went from war-torn poverty to chip superpower. Now it faces the lowest birth rate on earth and a tightening squeeze between America and China.</description>
+  </item>
+  <item>
     <title>The Explainer: Monetarism and Milton Friedman</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/monetarism-and-friedman</link>
     <guid isPermaLink="false">explainers-monetarism-and-friedman-2026-11-15</guid>
