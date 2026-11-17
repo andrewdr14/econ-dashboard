@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: Comparative advantage and the case for trade</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/comparative-advantage</link>
+    <guid isPermaLink="false">explainers-comparative-advantage-2026-11-17</guid>
+    <pubDate>Tue, 17 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Why two countries can both gain from trade even when one is better at everything, and why the people who lose out are real all the same.</description>
+  </item>
+  <item>
+    <title>Country Spotlight: China: the great factory searches for a new engine</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/china</link>
+    <guid isPermaLink="false">spotlights-china-2026-11-17</guid>
+    <pubDate>Tue, 17 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Four decades of breakneck, investment-led growth made China a manufacturing superpower. Now a property bust, an ageing population and trade friction are forcing a rethink.</description>
+  </item>
+  <item>
     <title>The Explainer: Neoliberalism: ideas, history and critiques</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/neoliberalism</link>
     <guid isPermaLink="false">explainers-neoliberalism-2026-11-16</guid>
