@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: Government debt and deficits: when does debt become a problem?</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/debt-and-deficits</link>
+    <guid isPermaLink="false">explainers-debt-and-deficits-2026-11-19</guid>
+    <pubDate>Thu, 19 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Japan owes more than twice its annual output and borrows cheaply; Greece owed less and lost market access. The difference lies in arithmetic, currency and trust.</description>
+  </item>
+  <item>
+    <title>Country Spotlight: Norway: how to get rich from oil without spending it</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/norway</link>
+    <guid isPermaLink="false">spotlights-norway-2026-11-19</guid>
+    <pubDate>Thu, 19 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Norway struck oil in 1969 and chose to save rather than splurge. Its giant sovereign wealth fund is the envy of the world, but the hardest choices may still lie ahead.</description>
+  </item>
+  <item>
     <title>The Explainer: Reading the labour market: unemployment, participation and the Phillips curve</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/the-labour-market</link>
     <guid isPermaLink="false">explainers-the-labour-market-2026-11-18</guid>
