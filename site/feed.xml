@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: What moves exchange rates</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/exchange-rates</link>
+    <guid isPermaLink="false">explainers-exchange-rates-2026-11-20</guid>
+    <pubDate>Fri, 20 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Interest rates, inflation, trade, fear and the occasional central bank all push currencies around. Here is how to make sense of the world&#x27;s biggest market.</description>
+  </item>
+  <item>
+    <title>Country Spotlight: Australia: the lucky country digs deep</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/australia</link>
+    <guid isPermaLink="false">spotlights-australia-2026-11-20</guid>
+    <pubDate>Fri, 20 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Australia dug its way to prosperity, selling iron ore and coal to Asia and going almost three decades without a recession. Housing costs, China and the energy transition now test its luck.</description>
+  </item>
+  <item>
     <title>The Explainer: Government debt and deficits: when does debt become a problem?</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/debt-and-deficits</link>
     <guid isPermaLink="false">explainers-debt-and-deficits-2026-11-19</guid>
