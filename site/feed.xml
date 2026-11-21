@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: Quantitative easing explained</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/quantitative-easing</link>
+    <guid isPermaLink="false">explainers-quantitative-easing-2026-11-21</guid>
+    <pubDate>Sat, 21 Nov 2026 06:00:00 +0000</pubDate>
+    <description>When interest rates hit zero, central banks started buying bonds by the hundreds of billions. What did that actually do, who gained, and what happens now it is being unwound?</description>
+  </item>
+  <item>
+    <title>Country Spotlight: Turkey: a dynamic economy on a monetary rollercoaster</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/turkey</link>
+    <guid isPermaLink="false">spotlights-turkey-2026-11-21</guid>
+    <pubDate>Sat, 21 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Turkey has factories that supply Europe, beaches that draw tens of millions of visitors and a strategic location few can match. Its experiment with unorthodox monetary policy shows how fast inflation can spiral.</description>
+  </item>
+  <item>
     <title>The Explainer: What moves exchange rates</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/exchange-rates</link>
     <guid isPermaLink="false">explainers-exchange-rates-2026-11-20</guid>
