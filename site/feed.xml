@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: Modern Monetary Theory: claims and critiques</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/modern-monetary-theory</link>
+    <guid isPermaLink="false">explainers-modern-monetary-theory-2026-11-22</guid>
+    <pubDate>Sun, 22 Nov 2026 06:00:00 +0000</pubDate>
+    <description>MMT says governments that issue their own currency face an inflation limit, not a money limit. Its supporters call it realism; its critics call it a recipe for trouble.</description>
+  </item>
+  <item>
+    <title>Country Spotlight: Indonesia: the archipelago that wants to make, not just mine</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/indonesia</link>
+    <guid isPermaLink="false">spotlights-indonesia-2026-11-22</guid>
+    <pubDate>Sun, 22 Nov 2026 06:00:00 +0000</pubDate>
+    <description>The world&#x27;s fourth most populous country grows steadily on domestic spending and natural resources. Its bold bet on processing nickel at home is reshaping global battery supply chains.</description>
+  </item>
+  <item>
     <title>The Explainer: Quantitative easing explained</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/quantitative-easing</link>
     <guid isPermaLink="false">explainers-quantitative-easing-2026-11-21</guid>
