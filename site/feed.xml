@@ -6,6 +6,20 @@
   <description>A daily economics explainer and country spotlight, each a 10-minute read.</description>
   <language>en-gb</language>
   <item>
+    <title>The Explainer: Productivity: why it matters most in the long run</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/productivity</link>
+    <guid isPermaLink="false">explainers-productivity-2026-11-23</guid>
+    <pubDate>Mon, 23 Nov 2026 06:00:00 +0000</pubDate>
+    <description>How much we produce for each hour we work decides, more than anything else, how rich we become. So why has Britain&#x27;s productivity barely grown since 2008?</description>
+  </item>
+  <item>
+    <title>Country Spotlight: Argentina: breaking the boom-bust cycle with a chainsaw</title>
+    <link>https://andrewdr14.github.io/econ-dashboard/#learn/spotlights/argentina</link>
+    <guid isPermaLink="false">spotlights-argentina-2026-11-23</guid>
+    <pubDate>Mon, 23 Nov 2026 06:00:00 +0000</pubDate>
+    <description>Once among the richest countries on earth, Argentina became a byword for default and inflation. Javier Milei&#x27;s radical experiment is the latest attempt to escape that history.</description>
+  </item>
+  <item>
     <title>The Explainer: Modern Monetary Theory: claims and critiques</title>
     <link>https://andrewdr14.github.io/econ-dashboard/#learn/explainers/modern-monetary-theory</link>
     <guid isPermaLink="false">explainers-modern-monetary-theory-2026-11-22</guid>
