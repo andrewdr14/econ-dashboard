@@ -1,6 +1,6 @@
 {
 "ARG": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -68,7 +68,7 @@
 ]
 },
 "AUS": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -113,6 +113,13 @@
 "year": "2025"
 },
 {
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 23.2444383508997,
+"year": "2025"
+},
+{
 "code": "NE.IMP.GNFS.ZS",
 "format": "pct_gdp",
 "label": "Imports",
@@ -136,7 +143,7 @@
 ]
 },
 "BRA": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -150,6 +157,13 @@
 "format": "usd",
 "label": "GDP per person",
 "value": 10713.2856869511,
+"year": "2025"
+},
+{
+"code": "NY.GDP.MKTP.KD.ZG",
+"format": "pct",
+"label": "Real GDP growth",
+"value": 2.2857464902475,
 "year": "2025"
 },
 {
@@ -174,10 +188,24 @@
 "year": "2025"
 },
 {
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 17.8207228961707,
+"year": "2025"
+},
+{
 "code": "NE.IMP.GNFS.ZS",
 "format": "pct_gdp",
 "label": "Imports",
 "value": 17.4707593653367,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -2.92630139201733,
 "year": "2025"
 },
 {
@@ -190,7 +218,7 @@
 ]
 },
 "CHN": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -232,6 +260,13 @@
 "format": "people_m",
 "label": "Population",
 "value": 1406585000,
+"year": "2025"
+},
+{
+"code": "NE.EXP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Exports",
+"value": 21.0711983566772,
 "year": "2025"
 },
 {
@@ -319,7 +354,7 @@
 ]
 },
 "IDN": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -369,11 +404,25 @@
 "label": "Exports",
 "value": 22.8465482987858,
 "year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 20.5446587523346,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -0.0866434374916221,
+"year": "2025"
 }
 ]
 },
 "IND": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -441,7 +490,7 @@
 ]
 },
 "JPN": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -509,7 +558,7 @@
 ]
 },
 "KOR": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -584,7 +633,7 @@
 ]
 },
 "MEX": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -659,7 +708,7 @@
 ]
 },
 "NGA": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -702,11 +751,18 @@
 "label": "Population",
 "value": 237527782,
 "year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": 4.82784315736378,
+"year": "2025"
 }
 ]
 },
 "NOR": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -758,6 +814,13 @@
 "year": "2025"
 },
 {
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 33.6798759181448,
+"year": "2025"
+},
+{
 "code": "BN.CAB.XOKA.GD.ZS",
 "format": "pct_gdp",
 "label": "Current account",
@@ -767,7 +830,7 @@
 ]
 },
 "SAU": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -835,7 +898,7 @@
 ]
 },
 "TUR": {
-"fetched": "2026-11-18",
+"fetched": "2026-11-25",
 "values": [
 {
 "code": "NY.GDP.MKTP.CD",
@@ -884,6 +947,20 @@
 "format": "pct_gdp",
 "label": "Exports",
 "value": 24.8497719904256,
+"year": "2025"
+},
+{
+"code": "NE.IMP.GNFS.ZS",
+"format": "pct_gdp",
+"label": "Imports",
+"value": 25.0849063722672,
+"year": "2025"
+},
+{
+"code": "BN.CAB.XOKA.GD.ZS",
+"format": "pct_gdp",
+"label": "Current account",
+"value": -1.89933817058389,
 "year": "2025"
 },
 {
