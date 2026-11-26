@@ -414,7 +414,7 @@
 "url": "https://assets.publishing.service.gov.uk/media/6a85c2d7c9205b515d421eeb/asylum-claims-datasets-jun-2026.xlsx"
 },
 "uk_ltim_Net migration": {
-"fetched": "2026-11-06",
+"fetched": "2026-11-26",
 "obs": [
 [
 "2012-06-01",
@@ -622,25 +622,33 @@
 ],
 [
 "2025-03-01",
-260000.0
+247000.0
 ],
 [
 "2025-06-01",
-219000.0
+204000.0
 ],
 [
 "2025-09-01",
-202000.0
+204000.0
 ],
 [
 "2025-12-01",
-171000.0
+167000.0
+],
+[
+"2026-03-01",
+112000.0
+],
+[
+"2026-06-01",
+77000.0
 ]
 ],
-"url": "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/internationalmigration/datasets/longterminternationalimmigrationemigrationandnetmigrationflowsprovisional/yearendingdecember2025/may2026publicationspreadsheet.xlsx"
+"url": "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/internationalmigration/datasets/longterminternationalimmigrationemigrationandnetmigrationflowsprovisional/yearendingjune2026/nov2026publicationspreadsheetfinal.xlsx"
 },
 "uk_visas_issued_by_group": {
-"fetched": "2026-11-06",
+"fetched": "2026-11-26",
 "obs": [
 [
 "Family",
@@ -988,6 +996,10 @@
 [
 "2026-04-01",
 13358.0
+],
+[
+"2026-07-01",
+14896.0
 ]
 ]
 ],
@@ -1337,6 +1349,10 @@
 [
 "2026-04-01",
 18570.0
+],
+[
+"2026-07-01",
+19624.0
 ]
 ]
 ],
@@ -1686,6 +1702,10 @@
 [
 "2026-04-01",
 33942.0
+],
+[
+"2026-07-01",
+228233.0
 ]
 ]
 ],
@@ -2035,6 +2055,10 @@
 [
 "2026-04-01",
 734910.0
+],
+[
+"2026-07-01",
+623375.0
 ]
 ]
 ],
@@ -2384,10 +2408,14 @@
 [
 "2026-04-01",
 70603.0
+],
+[
+"2026-07-01",
+56116.0
 ]
 ]
 ]
 ],
-"url": "https://assets.publishing.service.gov.uk/media/6a85c3741b45e4e555421eda/entry-clearance-visa-outcomes-datasets-jun-2026.xlsx"
+"url": "https://assets.publishing.service.gov.uk/media/6afd7db5df17de35d3a44e5f/entry-clearance-visa-outcomes-datasets-sep-2026.xlsx"
 }
 }
