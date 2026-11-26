@@ -1,6 +1,6 @@
 {
 "uk_asylum_claims": {
-"fetched": "2026-11-06",
+"fetched": "2026-11-26",
 "obs": [
 [
 "2001-01-01",
@@ -409,9 +409,13 @@
 [
 "2026-04-01",
 17233.0
+],
+[
+"2026-07-01",
+18000.0
 ]
 ],
-"url": "https://assets.publishing.service.gov.uk/media/6a85c2d7c9205b515d421eeb/asylum-claims-datasets-jun-2026.xlsx"
+"url": "https://assets.publishing.service.gov.uk/media/6afd7a71f24e0dfc46aa7f73/asylum-claims-datasets-sep-2026.xlsx"
 },
 "uk_ltim_Net migration": {
 "fetched": "2026-11-26",
